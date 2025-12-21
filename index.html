@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A股全市场全景数据库</title>
+    <link href="https://unpkg.com/gridjs/dist/theme/mermaid.min.css" rel="stylesheet" />
+    <style>
+        body { font-family: sans-serif; padding: 0; margin: 0; background: #f4f6f8; }
+        .header-container { background: #fff; padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        .title { margin: 0; color: #333; }
+        .subtitle { color: #666; font-size: 0.9em; margin-top: 5px; }
+        #wrapper { padding: 0 20px 20px 20px; }
+        /* 优化表格显示 */
+        .gridjs-th { font-size: 13px; background-color: #f9f9f9; }
+        .gridjs-td { font-size: 13px; font-family: Consolas, monospace; }
+    </style>
+</head>
+<body>
+    <div class="header-container">
+        <h2 class="title">📈 A股全市场全景数据库</h2>
+        <div class="subtitle">数据每日 16:00 自动更新 | 源自 GitHub Actions</div>
+    </div>
+
+    <div id="wrapper"></div>
+
+    <script src="https://unpkg.com/gridjs/dist/gridjs.umd.js"></script>
+    <script>
+        fetch('./data.json')
+            .then(res => res.json())
+            .then(data => {
+                if (!data.length) return;
+                
+                // 智能生成列配置：冻结前两列（代码、名称）
+                const keys = Object.keys(data[0]);
+                const columns = keys.map((key, index) => {
+                    return {
+                        name: key,
+                        id: key,
+                        width: index < 2 ? '100px' : '120px', // 基础列宽
+                    };
+                });
+
+                new gridjs.Grid({
+                    columns: columns,
+                    data: data,
+                    search: true,
+                    pagination: { limit: 15 },
+                    sort: true,
+                    fixedHeader: true,
+                    height: '80vh', // 固定高度，表格内部滚动
+                    resizable: true,
+                    language: {
+                        'search': { 'placeholder': '🔍 输入代码或名称...' },
+                        'pagination': { 'previous': '上页', 'next': '下页', 'showing': '显示', 'results': '条' }
+                    }
+                }).render(document.getElementById("wrapper"));
+            })
+            .catch(err => alert("数据加载失败，请稍后刷新"));
+    </script>
+</body>
+</html>
