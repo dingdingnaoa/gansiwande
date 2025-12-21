@@ -3,19 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>A-Share Pro • 智能终端</title>
+    <title>A-Share Pro • 全景终端</title>
     <link href="https://unpkg.com/gridjs/dist/theme/mermaid.min.css" rel="stylesheet" />
     <style>
-        /* ================= 设计系统 (System Design) ================= */
+        /* ================= 设计系统 ================= */
         :root {
             --bg-body: #f5f5f7;
             --bg-card: #ffffff;
             --text-primary: #1d1d1f;
             --text-secondary: #86868b;
             --accent: #0071e3;
-            --divider: #e5e5e5;
-            --radius-box: 18px;
-            --shadow-card: 0 4px 20px rgba(0,0,0,0.04);
+            --radius-box: 16px;
+            --shadow-card: 0 4px 24px rgba(0,0,0,0.06);
+            --red: #ff3b30;
+            --green: #34c759;
         }
 
         body {
@@ -23,76 +24,103 @@
             background-color: var(--bg-body);
             color: var(--text-primary);
             margin: 0;
-            padding-bottom: 40px;
+            padding-bottom: 60px;
             -webkit-font-smoothing: antialiased;
         }
 
-        /* 顶部导航 */
-        .navbar {
-            background: rgba(255, 255, 255, 0.8);
+        /* ================= 顶部导航与全局搜索 ================= */
+        .header-area {
+            background: rgba(255, 255, 255, 0.85);
             backdrop-filter: saturate(180%) blur(20px);
             -webkit-backdrop-filter: saturate(180%) blur(20px);
             position: sticky;
             top: 0;
             z-index: 100;
-            border-bottom: 1px solid rgba(0,0,0,0.05);
-            padding: 12px 0;
+            border-bottom: 1px solid rgba(0,0,0,0.08);
+            padding: 16px 0;
         }
 
-        .nav-inner {
+        .header-content {
             max-width: 1400px;
             margin: 0 auto;
             padding: 0 24px;
             display: flex;
-            justify-content: space-between;
+            flex-direction: column;
             align-items: center;
+            gap: 16px;
         }
 
-        .brand { font-weight: 600; font-size: 18px; letter-spacing: -0.5px; }
+        .brand { font-weight: 700; font-size: 20px; letter-spacing: -0.5px; }
+
+        /* 全局搜索框 - 核心交互 */
+        .global-search-container {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .global-search-input {
+            width: 100%;
+            padding: 12px 20px 12px 44px; /* 左边留给图标 */
+            font-size: 15px;
+            border: 1px solid rgba(0,0,0,0.1);
+            border-radius: 12px;
+            background: rgba(118, 118, 128, 0.12);
+            color: var(--text-primary);
+            outline: none;
+            transition: all 0.2s;
+            box-sizing: border-box; /* 关键：防止padding撑大宽度 */
+        }
+
+        .global-search-input:focus {
+            background: #fff;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.15);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+            pointer-events: none;
+        }
 
         /* ================= 分段控制器 (Tabs) ================= */
-        .tab-container {
-            display: flex;
-            justify-content: center;
-            margin: 30px 0;
+        .tab-wrapper {
+            margin-top: 10px;
         }
 
         .segmented-control {
             background: #e3e3e8;
-            padding: 4px;
-            border-radius: 99px; /* 胶囊形状 */
+            padding: 3px;
+            border-radius: 8px;
             display: inline-flex;
-            position: relative;
         }
 
         .segment-btn {
             border: none;
             background: transparent;
-            padding: 8px 32px;
-            font-size: 14px;
+            padding: 6px 24px;
+            font-size: 13px;
             font-weight: 500;
             color: var(--text-primary);
             cursor: pointer;
-            border-radius: 99px;
-            position: relative;
-            z-index: 2;
-            transition: all 0.3s ease;
+            border-radius: 6px;
+            transition: all 0.2s;
         }
 
         .segment-btn.active {
             background: #fff;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
             font-weight: 600;
         }
 
-        .segment-btn:hover:not(.active) {
-            opacity: 0.6;
-        }
-
-        /* ================= 主容器 ================= */
+        /* ================= 内容卡片 ================= */
         .main-wrapper {
             max-width: 1400px;
-            margin: 0 auto;
+            margin: 24px auto;
             padding: 0 24px;
         }
 
@@ -100,262 +128,299 @@
             background: var(--bg-card);
             border-radius: var(--radius-box);
             box-shadow: var(--shadow-card);
-            border: 1px solid rgba(0,0,0,0.02);
-            padding: 8px;
+            padding: 4px; /* 给表格留一点边距 */
             overflow: hidden;
-            min-height: 500px;
-            transition: opacity 0.3s ease;
+            display: none; /* 默认隐藏 */
+            animation: fadeIn 0.3s ease;
         }
 
-        /* 隐藏显示的控制 */
-        .module-section { display: none; animation: fadeIn 0.4s ease; }
-        .module-section.active { display: block; }
+        .card.active { display: block; }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: 0; } }
 
-        /* ================= 表格微调 ================= */
+        /* ================= Grid.js 定制 ================= */
         .gridjs-container { font-family: inherit; color: var(--text-primary); }
-        .gridjs-wrapper { box-shadow: none !important; border: none !important; border-radius: 0; }
-        .gridjs-head { display: none; } /* 隐藏原来的头部 */
+        .gridjs-wrapper { box-shadow: none !important; border: none !important; }
+        .gridjs-head { display: none; } /* 隐藏Grid自带的搜索框，因为我们用了全局搜索 */
         
         th.gridjs-th {
             background: #fbfbfd;
-            border-bottom: 1px solid var(--divider);
+            border-bottom: 1px solid rgba(0,0,0,0.1);
             font-size: 12px;
             color: var(--text-secondary);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            padding: 14px 16px;
+            font-weight: 600;
+            padding: 12px;
         }
 
         td.gridjs-td {
-            border-bottom: 1px solid #f2f2f5;
-            padding: 14px 16px;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            padding: 10px 12px;
             font-size: 13px;
-            font-variant-numeric: tabular-nums; /* 数字对齐优化 */
+            vertical-align: middle;
         }
 
-        /* 迷你走势图 SVG 样式 */
-        .trend-svg {
-            vertical-align: middle;
-            opacity: 0.9;
+        /* ================= 迷你走势图样式 ================= */
+        .trend-container {
+            display: flex;
+            align-items: center;
+            height: 50px;
         }
-        .trend-path {
-            fill: none;
-            stroke-width: 2;
-            stroke-linecap: round;
-            stroke-linejoin: round;
+        .trend-labels {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 100%;
+            font-size: 10px;
+            color: var(--text-secondary);
+            margin-right: 8px;
+            text-align: right;
+            width: 30px;
         }
+        .trend-svg-box { flex: 1; }
+        .trend-text { font-size: 9px; fill: var(--text-secondary); font-weight: 500; }
+
+        /* 涨跌颜色 */
+        .text-up { color: var(--red); font-weight: 600; }
+        .text-down { color: var(--green); font-weight: 600; }
+        .bg-up-light { background: rgba(255, 59, 48, 0.08); padding: 2px 6px; border-radius: 4px; }
+        .bg-down-light { background: rgba(52, 199, 89, 0.08); padding: 2px 6px; border-radius: 4px; }
+
     </style>
 </head>
 <body>
 
-    <nav class="navbar">
-        <div class="nav-inner">
-            <div class="brand">A-Share Pro</div>
-            <div style="font-size: 12px; color: var(--text-secondary);">Market Data Center</div>
-        </div>
-    </nav>
+    <header class="header-area">
+        <div class="header-content">
+            <div class="brand">A-Share Data Pro</div>
+            
+            <div class="global-search-container">
+                <span class="search-icon">🔍</span>
+                <input type="text" id="globalSearch" class="global-search-input" placeholder="输入代码 (600519) 或名称 (茅台) 搜索...">
+            </div>
 
-    <div class="tab-container">
-        <div class="segmented-control">
-            <button class="segment-btn active" onclick="switchTab('basic')">基础行情 & 走势</button>
-            <button class="segment-btn" onclick="switchTab('finance')">财务核心指标</button>
+            <div class="tab-wrapper">
+                <div class="segmented-control">
+                    <button class="segment-btn active" onclick="switchModule('basic')">基础行情 & 趋势</button>
+                    <button class="segment-btn" onclick="switchModule('finance')">财务核心指标 (按季度)</button>
+                </div>
+            </div>
         </div>
-    </div>
+    </header>
 
-    <div class="main-wrapper">
-        <div id="module-basic" class="card module-section active">
+    <main class="main-wrapper">
+        <div id="module-basic" class="card active">
             <div id="grid-basic"></div>
         </div>
 
-        <div id="module-finance" class="card module-section">
+        <div id="module-finance" class="card">
             <div id="grid-finance"></div>
         </div>
-    </div>
+    </main>
 
     <script src="https://unpkg.com/gridjs/dist/gridjs.umd.js"></script>
     <script>
-        let fullData = []; // 全局存储数据
+        // 全局变量存储数据和表格实例
+        let ALL_DATA = [];
+        let gridBasic = null;
+        let gridFinance = null;
 
-        // 切换 Tab 的逻辑
-        window.switchTab = function(tabName) {
-            // 1. 切换按钮样式
+        // ================= 工具函数 =================
+
+        // 切换模块
+        window.switchModule = function(moduleName) {
+            // 按钮样式
             document.querySelectorAll('.segment-btn').forEach(btn => btn.classList.remove('active'));
             event.target.classList.add('active');
+            
+            // 内容显示
+            document.querySelectorAll('.card').forEach(card => card.classList.remove('active'));
+            document.getElementById(`module-${moduleName}`).classList.add('active');
 
-            // 2. 切换内容显示
-            document.querySelectorAll('.module-section').forEach(div => div.classList.remove('active'));
-            document.getElementById(`module-${tabName}`).classList.add('active');
-
-            // 3. 强制重绘 Grid (解决隐藏状态下宽度计算错误问题)
+            // 强制刷新表格布局 (修复切换时表头错位)
             window.dispatchEvent(new Event('resize'));
         }
 
-        // 生成迷你折线图 SVG 字符串 (高性能版)
-        function generateSparkline(values) {
-            if (!values || values.length < 2) return '<span style="color:#ccc">--</span>';
-            
-            const width = 120;
+        // 生成带标注的折线图 (Sparkline V2)
+        function generateProSparkline(values) {
+            if (!values || values.length < 2) return '<span style="color:#ddd">暂无走势</span>';
+
+            const width = 140;
             const height = 40;
+            const padding = 5; // 内边距，防止极值顶到边框
+            
             const min = Math.min(...values);
             const max = Math.max(...values);
-            const range = max - min || 1; // 防止除以0
-
-            // 颜色逻辑：最后一个点 > 第一个点 ? 红色 : 绿色
-            const isUp = values[values.length - 1] >= values[0];
-            const color = isUp ? '#ff3b30' : '#34c759'; // iOS 红/绿
+            const range = max - min || 1;
             
-            // 构建 SVG 路径点
-            const points = values.map((val, index) => {
-                const x = (index / (values.length - 1)) * width;
-                // y坐标翻转，因为SVG原点在左上角
-                const y = height - ((val - min) / range) * height;
+            const startPrice = values[0];
+            const endPrice = values[values.length - 1];
+            const isUp = endPrice >= startPrice;
+            const color = isUp ? '#ff3b30' : '#34c759';
+
+            // 生成路径点
+            const points = values.map((val, i) => {
+                const x = (i / (values.length - 1)) * width;
+                // 留出 padding 空间
+                const y = (height - padding) - ((val - min) / range) * (height - 2 * padding);
                 return `${x},${y}`;
             }).join(' ');
 
             return `
-                <svg width="${width}" height="${height}" class="trend-svg">
-                    <polyline points="${points}" class="trend-path" stroke="${color}" />
-                    <circle cx="${width}" cy="${height - ((values[values.length-1] - min)/range)*height}" r="2" fill="${color}" />
-                </svg>
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <span style="font-size:10px; color:#888; width:30px; text-align:right;">${startPrice.toFixed(1)}</span>
+                    <svg width="${width}" height="${height}" style="overflow:visible">
+                        <polyline points="${points}" fill="none" stroke="${color}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        <circle cx="${width}" cy="${(height - padding) - ((endPrice - min) / range) * (height - 2 * padding)}" r="2.5" fill="${color}" />
+                    </svg>
+                    <span style="font-size:10px; color:${color}; font-weight:600; width:35px;">${endPrice.toFixed(1)}</span>
+                </div>
             `;
         }
 
-        document.addEventListener('DOMContentLoaded', function() {
-            fetch('./data.json')
-                .then(res => res.json())
-                .then(data => {
-                    if (!data || data.length === 0) return;
-                    fullData = data;
+        // ================= 核心逻辑 =================
 
-                    // ============ 数据预处理：提取走势 ============
-                    // 1. 找到所有 "xxxx-xx_均价" 的列名，并按日期排序
-                    const sampleKeys = Object.keys(data[0]);
-                    const trendKeys = sampleKeys.filter(k => k.includes('_均价')).sort(); // 简单的字符串排序通常足够，因为格式是 YYYY-MM
-                    
-                    // ============ 渲染模块一：基础行情 + 走势图 ============
-                    new gridjs.Grid({
-                        data: data,
-                        columns: [
-                            { name: '代码', id: '代码', width: '80px' },
-                            { name: '名称', id: '名称', width: '100px' },
-                            { 
-                                name: '最新价', 
-                                id: '最新价', 
-                                width: '90px',
-                                formatter: (cell) => gridjs.html(`<b>${cell}</b>`)
-                            },
-                            { 
-                                name: '近一年走势 (月均)', 
-                                id: '代码', // 使用代码作为ID，以便在 formatter 里拿到整行数据
-                                width: '160px',
-                                formatter: (cell, row) => {
-                                    // 从整行数据里提取 trendKeys 对应的值
-                                    // row.cells 是当前显示的单元格数组，我们需要去原始数据里找(比较麻烦)，
-                                    // 或者这里直接利用 row 的数据结构。
-                                    // Grid.js 的 formatter 第二个参数 row 包含数据。
-                                    
-                                    // 更稳健的方法：利用我们在外部解析好的 trendKeys，去 data 对象里找
-                                    // 但 gridjs formatter 里的 row 是一个对象数组。
-                                    // 我们这里做一个小技巧：利用 find 查找当前行原始数据（略耗时），
-                                    // 或者在上面处理 data 时直接把 "trend_array" 注入进去。
-                                    
-                                    // ⚡️ 最佳性能方案：预处理
-                                    // 让我们在下面初始化 Grid 之前先给 data 加一个隐藏属性
-                                    return gridjs.html(row.cells[3].data); // 这里占位，实际逻辑在下面预处理做
-                                }
-                            },
-                            { 
-                                name: '涨跌幅%', 
-                                id: '涨跌幅%', 
-                                width: '100px',
-                                formatter: (cell) => {
-                                    const val = parseFloat(cell);
-                                    const color = val > 0 ? '#ff3b30' : (val < 0 ? '#34c759' : '#999');
-                                    return gridjs.html(`<span style="color:${color}">${cell}%</span>`);
-                                }
-                            },
-                            { name: '总市值(万)', id: '总市值(万)', width: '120px' },
-                            { name: '市盈率', id: '市盈率(动)', width: '100px' },
-                            { name: '换手率%', id: '换手率%', width: '100px' },
-                            { name: '行业/概念', id: '概念', hidden: true } // 如果有的话
-                        ].map(c => ({...c, sort: true})), // 开启所有列排序
-                        
-                        // ⚡️ 核心：在数据进入 Grid 之前，先把 SVG 画好存进去
-                        data: data.map(item => {
-                            // 提取价格数组
-                            const prices = trendKeys.map(k => parseFloat(item[k])).filter(n => !isNaN(n));
-                            // 生成 SVG
-                            const svgHtml = generateSparkline(prices.reverse()); // 注意：如果你的列名是倒序的(最新在左)，这里要reverse
-                            
-                            // 返回新对象，专门用于显示
-                            return {
-                                ...item,
-                                'trend_svg': svgHtml // 新增一个字段放SVG
-                            };
-                        }),
-                        
-                        columns: [
-                            { id: '代码', name: '代码', width: '85px' },
-                            { id: '名称', name: '名称', width: '90px' },
-                            { id: '最新价', name: '最新价', width: '90px', formatter: (cell) => gridjs.html(`<b>${cell}</b>`) },
-                            { 
-                                id: 'trend_svg', 
-                                name: '近一年走势', 
-                                width: '150px',
-                                sort: false, // SVG不能排序
-                                formatter: (cell) => gridjs.html(cell) 
-                            },
-                            { 
-                                id: '涨跌幅%', name: '涨跌幅', width: '100px',
-                                formatter: (cell) => {
-                                    const val = parseFloat(cell);
-                                    if(isNaN(val)) return '-';
-                                    const color = val > 0 ? '#ff3b30' : (val < 0 ? '#34c759' : '#888');
-                                    return gridjs.html(`<span style="color:${color};font-weight:600">${cell}%</span>`);
-                                }
-                            },
-                            { id: '总市值(万)', name: '市值(万)', width: '110px' },
-                            { id: '市盈率(动)', name: 'PE(动)', width: '90px' },
-                            { id: '换手率%', name: '换手%', width: '90px' }
-                        ],
-                        search: { enabled: true, placeholder: '🔍 搜索代码/名称...' },
-                        pagination: { limit: 12 },
-                        fixedHeader: true,
-                        height: '65vh',
-                        style: { table: { 'white-space': 'nowrap' } }
-                    }).render(document.getElementById("grid-basic"));
+        document.addEventListener('DOMContentLoaded', async function() {
+            try {
+                const res = await fetch('./data.json');
+                ALL_DATA = await res.json();
+                
+                if (!ALL_DATA || ALL_DATA.length === 0) return;
 
-                    // ============ 渲染模块二：财务指标 ============
-                    // 筛选出非基础行情的列，通常是 EPS, ROE 等
-                    // 这里我们手动定义一份专业的财务列配置
-                    new gridjs.Grid({
-                        data: data,
-                        columns: [
-                            { id: '代码', name: '代码', width: '85px', fixed: true },
-                            { id: '名称', name: '名称', width: '90px', fixed: true },
-                            { id: 'EPS', name: 'EPS', width: '80px' },
-                            { id: 'ROE', name: 'ROE%', width: '90px' },
-                            { id: '净利', name: '净利润', width: '100px' },
-                            { id: '营收', name: '营业收入', width: '100px' },
-                            { id: '毛利率', name: '毛利率%', width: '90px' },
-                            { id: '净利率', name: '净利率%', width: '90px' },
-                            { id: '负债率', name: '负债率%', width: '90px' },
-                            { id: '流动比', name: '流动比', width: '80px' },
-                            { id: '现金流', name: '现金流', width: '100px', hidden: true } // 假设有
-                        ],
-                        search: { enabled: true, placeholder: '🔍 搜索...' },
-                        pagination: { limit: 12 },
-                        fixedHeader: true,
-                        height: '65vh',
-                        style: { table: { 'white-space': 'nowrap' } }
-                    }).render(document.getElementById("grid-finance"));
+                // 1. 数据预处理：提取所有可用的日期列 (用于财务模块)
+                const allKeys = Object.keys(ALL_DATA[0]);
+                
+                // 提取 "2024-09-30_EPS" 这种格式中的日期部分
+                const dateSet = new Set();
+                const trendKeys = []; // 用于基础行情的均价
 
+                allKeys.forEach(key => {
+                    if (key.includes('_均价')) trendKeys.push(key);
+                    // 匹配 YYYY-MM-DD 格式
+                    const match = key.match(/(\d{4}-\d{2}-\d{2})/);
+                    if (match) dateSet.add(match[1]);
                 });
+
+                // 对日期倒序排列，取最近的4个季度
+                const sortedDates = Array.from(dateSet).sort().reverse().slice(0, 4);
+                trendKeys.sort(); // 均价按时间正序
+
+                // 2. 初始化 基础行情表格
+                gridBasic = new gridjs.Grid({
+                    data: ALL_DATA,
+                    columns: [
+                        { id: '代码', name: '代码', width: '80px' },
+                        { id: '名称', name: '名称', width: '90px' },
+                        { 
+                            id: '最新价', name: '最新价', width: '80px',
+                            formatter: (cell) => gridjs.html(`<b>${cell}</b>`)
+                        },
+                        {
+                            name: '近一年走势 (始/终)',
+                            width: '240px',
+                            sort: false,
+                            formatter: (_, row) => {
+                                // 动态从行数据中提取均价
+                                // row.cells 是当前列的数据，我们需要用原始数据
+                                // 这里使用一个小技巧：匹配当前代码
+                                const stockCode = row.cells[0].data;
+                                const stockData = ALL_DATA.find(d => d['代码'] === stockCode);
+                                if(!stockData) return '';
+
+                                const prices = trendKeys.map(k => parseFloat(stockData[k])).filter(n => !isNaN(n));
+                                return gridjs.html(generateProSparkline(prices));
+                            }
+                        },
+                        { 
+                            id: '涨跌幅%', name: '涨跌幅', width: '90px',
+                            formatter: (cell) => {
+                                const val = parseFloat(cell);
+                                if(isNaN(val)) return '-';
+                                const cls = val > 0 ? 'bg-up-light text-up' : (val < 0 ? 'bg-down-light text-down' : '');
+                                return gridjs.html(`<span class="${cls}">${cell}%</span>`);
+                            }
+                        },
+                        { id: '总市值(万)', name: '市值(万)', width: '100px' },
+                        { id: '市盈率(动)', name: 'PE(动)', width: '80px' },
+                        { id: '换手率%', name: '换手率', width: '80px' }
+                    ],
+                    pagination: { limit: 15 },
+                    fixedHeader: true,
+                    height: '70vh',
+                    style: { table: { 'white-space': 'nowrap' } }
+                }).render(document.getElementById("grid-basic"));
+
+
+                // 3. 初始化 财务指标表格 (动态生成季度列)
+                
+                // 构建列配置：前两列固定，后面按季度循环
+                const financeColumns = [
+                    { id: '代码', name: '代码', width: '80px', fixed: true },
+                    { id: '名称', name: '名称', width: '90px', fixed: true }
+                ];
+
+                // 遍历最近4个季度，动态添加列
+                // 示例：2024-09-30 -> 显示为 "24Q3"
+                sortedDates.forEach(date => {
+                    const year = date.substring(2, 4);
+                    const month = parseInt(date.substring(5, 7));
+                    const quarter = Math.ceil(month / 3);
+                    const label = `${year}Q${quarter}`; // 例如 24Q3
+
+                    // 为每个季度添加核心指标列
+                    financeColumns.push(
+                        { 
+                            id: `${date}_EPS`, 
+                            name: `${label} EPS`, 
+                            width: '90px',
+                            formatter: (cell) => cell ? parseFloat(cell).toFixed(3) : '-'
+                        },
+                        { 
+                            id: `${date}_ROE`, 
+                            name: `${label} ROE`, 
+                            width: '90px',
+                            formatter: (cell) => cell ? `${parseFloat(cell).toFixed(2)}%` : '-'
+                        },
+                        { 
+                            id: `${date}_净利`, 
+                            name: `${label} 净利`, 
+                            width: '100px',
+                            formatter: (cell) => cell ? (parseFloat(cell)/100000000).toFixed(2)+'亿' : '-'
+                        }
+                    );
+                });
+
+                gridFinance = new gridjs.Grid({
+                    data: ALL_DATA,
+                    columns: financeColumns,
+                    pagination: { limit: 15 },
+                    fixedHeader: true,
+                    height: '70vh',
+                    style: { table: { 'white-space': 'nowrap' } }
+                }).render(document.getElementById("grid-finance"));
+
+
+                // 4. 绑定全局搜索事件 (高性能过滤)
+                const searchInput = document.getElementById('globalSearch');
+                
+                searchInput.addEventListener('input', function(e) {
+                    const keyword = e.target.value.toLowerCase().trim();
+                    
+                    // 过滤数据
+                    const filtered = ALL_DATA.filter(item => 
+                        (item['代码'] && item['代码'].includes(keyword)) ||
+                        (item['名称'] && item['名称'].toLowerCase().includes(keyword))
+                    );
+
+                    // 同时更新两个表格的数据配置
+                    // 注意：updateConfig 比较轻量，forceRender 触发重绘
+                    gridBasic.updateConfig({ data: filtered }).forceRender();
+                    gridFinance.updateConfig({ data: filtered }).forceRender();
+                });
+
+            } catch (error) {
+                console.error("加载失败:", error);
+                document.querySelector('.main-wrapper').innerHTML = `<h3 style="text-align:center; margin-top:50px; color:#888;">数据加载中或发生错误...<br><small>${error}</small></h3>`;
+            }
         });
     </script>
 </body>
