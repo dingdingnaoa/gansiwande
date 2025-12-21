@@ -3,60 +3,317 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>A股全市场全景数据库</title>
+    <title>A-Share Data • Pro</title>
     <link href="https://unpkg.com/gridjs/dist/theme/mermaid.min.css" rel="stylesheet" />
     <style>
-        body { font-family: sans-serif; padding: 0; margin: 0; background: #f4f6f8; }
-        .header-container { background: #fff; padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 20px; }
-        .title { margin: 0; color: #333; }
-        .subtitle { color: #666; font-size: 0.9em; margin-top: 5px; }
-        #wrapper { padding: 0 20px 20px 20px; }
-        /* 优化表格显示 */
-        .gridjs-th { font-size: 13px; background-color: #f9f9f9; }
-        .gridjs-td { font-size: 13px; font-family: Consolas, monospace; }
+        /* ================= 核心设计语言 ================= */
+        :root {
+            --bg-color: #f5f5f7; /* Apple 浅灰背景 */
+            --card-bg: #ffffff;
+            --text-primary: #1d1d1f; /* 深空灰文字 */
+            --text-secondary: #86868b;
+            --accent-color: #0066cc; /* Apple 经典蓝 */
+            --glass-bg: rgba(255, 255, 255, 0.72);
+            --glass-border: rgba(0, 0, 0, 0.05);
+            --radius-l: 20px;
+            --radius-m: 12px;
+            --shadow-soft: 0 4px 24px rgba(0, 0, 0, 0.04);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            margin: 0;
+            padding: 0;
+            -webkit-font-smoothing: antialiased; /* 让字体更清晰 */
+        }
+
+        /* ================= 顶部导航 (毛玻璃效果) ================= */
+        .navbar {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: var(--glass-bg);
+            backdrop-filter: saturate(180%) blur(20px); /* 核心：毛玻璃 */
+            -webkit-backdrop-filter: saturate(180%) blur(20px);
+            border-bottom: 1px solid var(--glass-border);
+            padding: 16px 0;
+            transition: all 0.3s ease;
+        }
+
+        .nav-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .brand {
+            font-size: 20px;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .brand span {
+            color: var(--text-secondary);
+            font-weight: 400;
+            font-size: 14px;
+        }
+
+        /* ================= 主容器 ================= */
+        .main-container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 24px;
+            animation: fadeIn 0.8s ease-out; /* 入场动画 */
+        }
+
+        .hero-text {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .hero-text h1 {
+            font-size: 48px;
+            font-weight: 700;
+            letter-spacing: -1.5px;
+            margin: 0 0 10px 0;
+        }
+
+        .hero-text p {
+            font-size: 20px;
+            color: var(--text-secondary);
+            font-weight: 400;
+        }
+
+        /* ================= 数据卡片 ================= */
+        .data-card {
+            background: var(--card-bg);
+            border-radius: var(--radius-l);
+            box-shadow: var(--shadow-soft);
+            padding: 24px;
+            border: 1px solid rgba(0,0,0,0.02);
+            overflow: hidden; /* 圆角溢出隐藏 */
+        }
+
+        /* ================= Grid.js 深度定制 (覆盖原生样式) ================= */
+        
+        /* 移除丑陋的默认边框 */
+        .gridjs-container {
+            color: var(--text-primary);
+            font-family: inherit;
+        }
+        
+        .gridjs-wrapper {
+            border-radius: var(--radius-m);
+            border: 1px solid #e5e5e5;
+            box-shadow: none !important;
+        }
+
+        /* 表头 */
+        th.gridjs-th {
+            background-color: #fafafa;
+            border-bottom: 1px solid #e5e5e5;
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 13px;
+            padding: 16px;
+            text-transform: uppercase; /* 更有设计感 */
+            letter-spacing: 0.5px;
+            border-top: none;
+        }
+
+        /* 表格内容 */
+        td.gridjs-td {
+            background-color: #fff;
+            border-bottom: 1px solid #f0f0f0;
+            padding: 16px;
+            font-size: 14px;
+            color: var(--text-primary);
+            border-right: none; /* 去掉竖线，更现代 */
+        }
+
+        /* 搜索框 - 模仿 iOS 搜索栏 */
+        .gridjs-search {
+            float: left;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .gridjs-search-input {
+            width: 100%;
+            max-width: 400px;
+            padding: 12px 16px;
+            border-radius: 12px;
+            border: 1px solid transparent;
+            background-color: #e3e3e8; /* 深色一点的背景 */
+            font-size: 14px;
+            transition: all 0.2s;
+            outline: none;
+        }
+
+        .gridjs-search-input:focus {
+            background-color: #fff;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 4px rgba(0, 102, 204, 0.15);
+        }
+
+        /* 分页按钮 */
+        .gridjs-footer {
+            background-color: transparent;
+            border: none;
+            padding-top: 20px;
+        }
+
+        .gridjs-pagination .gridjs-pages button {
+            border-radius: 8px;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .gridjs-pagination .gridjs-pages button:hover {
+            background-color: #f0f0f0;
+            color: var(--text-primary);
+        }
+
+        .gridjs-pagination .gridjs-pages button.gridjs-currentPage {
+            background-color: var(--text-primary); /* 黑色选中态 */
+            color: #fff;
+            font-weight: bold;
+        }
+
+        /* 涨跌幅颜色 (可选增强) */
+        .trend-up { color: #d63031; font-weight: 600; }
+        .trend-down { color: #009966; font-weight: 600; }
+
+        /* 页脚 */
+        footer {
+            text-align: center;
+            padding: 40px 0;
+            color: var(--text-secondary);
+            font-size: 12px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 移动端适配 */
+        @media (max-width: 768px) {
+            .hero-text h1 { font-size: 32px; }
+            .data-card { padding: 12px; border-radius: var(--radius-m); }
+            .gridjs-search-input { max-width: 100%; }
+        }
     </style>
 </head>
 <body>
-    <div class="header-container">
-        <h2 class="title">📈 A股全市场全景数据库</h2>
-        <div class="subtitle">数据每日 16:00 自动更新 | 源自 GitHub Actions</div>
-    </div>
 
-    <div id="wrapper"></div>
+    <nav class="navbar">
+        <div class="nav-content">
+            <div class="brand">
+                A-Share DB <span>Pro</span>
+            </div>
+            <div style="font-size: 13px; color: var(--text-secondary);">
+                Live Data
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-container">
+        <div class="hero-text">
+            <h1>全景数据，一览无余。</h1>
+            <p>基于 GitHub Actions 的自动化金融终端。</p>
+        </div>
+
+        <div class="data-card">
+            <div id="wrapper"></div>
+        </div>
+    </main>
+
+    <footer>
+        <p>Designed for A-Share Investors • Updates Daily at 16:00</p>
+    </footer>
 
     <script src="https://unpkg.com/gridjs/dist/gridjs.umd.js"></script>
     <script>
-        fetch('./data.json')
-            .then(res => res.json())
-            .then(data => {
-                if (!data.length) return;
-                
-                // 智能生成列配置：冻结前两列（代码、名称）
-                const keys = Object.keys(data[0]);
-                const columns = keys.map((key, index) => {
-                    return {
-                        name: key,
-                        id: key,
-                        width: index < 2 ? '100px' : '120px', // 基础列宽
-                    };
-                });
+        document.addEventListener('DOMContentLoaded', function() {
+            fetch('./data.json')
+                .then(response => response.json())
+                .then(data => {
+                    if (!data || data.length === 0) return;
 
-                new gridjs.Grid({
-                    columns: columns,
-                    data: data,
-                    search: true,
-                    pagination: { limit: 15 },
-                    sort: true,
-                    fixedHeader: true,
-                    height: '80vh', // 固定高度，表格内部滚动
-                    resizable: true,
-                    language: {
-                        'search': { 'placeholder': '🔍 输入代码或名称...' },
-                        'pagination': { 'previous': '上页', 'next': '下页', 'showing': '显示', 'results': '条' }
-                    }
-                }).render(document.getElementById("wrapper"));
-            })
-            .catch(err => alert("数据加载失败，请稍后刷新"));
+                    // 动态获取列名
+                    const rawColumns = Object.keys(data[0]);
+                    
+                    // 智能定义列配置 (固定宽度，居中对齐等)
+                    const columns = rawColumns.map((key, index) => {
+                        // 默认配置
+                        let config = {
+                            name: key,
+                            id: key,
+                            width: '130px'
+                        };
+
+                        // 特殊列处理
+                        if (key.includes('代码')) config.width = '100px';
+                        if (key.includes('名称')) config.width = '110px';
+                        if (key.includes('涨跌')) {
+                            config.formatter = (cell) => {
+                                const val = parseFloat(cell);
+                                if (isNaN(val)) return cell;
+                                // A股红涨绿跌
+                                const color = val > 0 ? '#ff3b30' : (val < 0 ? '#34c759' : '#86868b');
+                                return gridjs.html(`<span style="color:${color}; font-weight:600">${cell}%</span>`);
+                            };
+                        }
+                        
+                        return config;
+                    });
+
+                    new gridjs.Grid({
+                        columns: columns,
+                        data: data,
+                        search: {
+                            enabled: true,
+                            placeholder: '🔍 搜索 600519 或 贵州茅台...'
+                        },
+                        pagination: {
+                            limit: 15,
+                            summary: false // 极简模式，隐藏 "Showing 1 to 10"
+                        },
+                        sort: true,
+                        fixedHeader: true,
+                        height: '70vh', // 固定高度，内部滚动
+                        resizable: true,
+                        language: {
+                            'search': { 'placeholder': '搜索...' },
+                        },
+                        style: {
+                            table: {
+                                'white-space': 'nowrap'
+                            }
+                        }
+                    }).render(document.getElementById("wrapper"));
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    document.getElementById("wrapper").innerHTML = 
+                        `<div style="text-align:center; padding:40px; color:#86868b">
+                            暂时无法加载数据，请稍后刷新页面。<br>
+                            <small>${error.message}</small>
+                        </div>`;
+                });
+        });
     </script>
 </body>
 </html>
