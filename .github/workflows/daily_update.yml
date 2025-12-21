@@ -2,15 +2,15 @@ name: Update A-Share Data
 
 on:
   schedule:
-    # 北京时间 16:30 (UTC 8:30)
+    # 北京时间每天下午 16:30 自动运行
     - cron: '30 8 * * *'
-  workflow_dispatch: # 允许你手动点击按钮触发
+  workflow_dispatch: # 允许你手动点击按钮测试
 
 jobs:
   scrape-and-deploy:
     runs-on: ubuntu-latest
     
-    # 这一步非常重要，防止 git push 权限报错
+    # 【重要】赋予写权限，这样才能把新数据存回 CSV
     permissions:
       contents: write
 
@@ -25,19 +25,16 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install requests pandas lxml openpyxl numpy
+          pip install -r requirements.txt
 
       - name: Run Crawler
         run: |
           python main.py
 
-      - name: Commit and Push Data (The Cache Fix)
-        # 这里的逻辑是：如果 CSV 或 JSON 变了，就提交回仓库
-        # 这样下一次运行时，Checkout code 就会把更新后的 CSV 拉下来
+      - name: Commit and Push Data
         run: |
           git config --global user.name 'GitHub Action'
           git config --global user.email 'action@github.com'
           git add .
-          # 如果没有变化（比如休市），commit 会报错，所以加 || exit 0 忽略错误
           git commit -m "Auto-update data $(date +'%Y-%m-%d')" || exit 0
           git push
