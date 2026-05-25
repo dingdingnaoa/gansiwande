@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A-Share Pro • 10年核心价值投资量化终端</title>
+    <link href="https://unpkg.com/gridjs/dist/theme/mermaid.min.css" rel="stylesheet" />
+    <style>
+        :root {
+            --bg-body: #f5f5f7; --bg-card: #ffffff; --text-primary: #1d1d1f; --text-secondary: #6e6e73;
+            --accent: #0071e3; --radius-box: 12px; --radius-inner: 8px; --shadow-card: 0 4px 20px rgba(0,0,0,0.03);
+            --red: #ff3b30; --green: #34c759; --border-light: rgba(0,0,0,0.06);
+        }
+        body { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif; background-color: var(--bg-body); color: var(--text-primary); margin: 0; padding: 0; overflow-x: hidden; }
+        .header-area { background: rgba(255, 255, 255, 0.85); backdrop-filter: saturate(180%) blur(20px); position: sticky; top: 0; z-index: 100; border-bottom: 1px solid var(--border-light); padding: 10px 14px; }
+        .header-content { width: 100%; display: flex; justify-content: space-between; align-items: center; }
+        .brand-box { display: flex; align-items: center; gap: 8px; }
+        .brand-logo { background: var(--accent); color: #fff; font-weight: 800; padding: 4px 10px; border-radius: 6px; font-size: 13px; }
+        .brand-title { font-weight: 700; font-size: 18px; letter-spacing: -0.3px; }
+        .right-controls { display: flex; align-items: center; gap: 16px; }
+        .time-badge { font-size: 11px; font-family: monospace; color: #fff; background: #2c2c2e; padding: 6px 12px; border-radius: 6px; font-weight: 500; }
+        .global-search-container { position: relative; width: 280px; }
+        .global-search-input { width: 100%; padding: 8px 12px 8px 32px; font-size: 13px; border: 1px solid rgba(0,0,0,0.08); border-radius: var(--radius-inner); background: rgba(118, 118, 128, 0.06); outline: none; color: var(--text-primary); }
+        .search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text-secondary); font-size: 12px; }
+        .dashboard-summary { margin: 12px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+        .summary-card { background: var(--bg-card); padding: 12px 16px; border-radius: var(--radius-box); box-shadow: var(--shadow-card); display: flex; align-items: center; justify-content: space-between; border: 1px solid rgba(0,0,0,0.01); }
+        .summary-label { font-size: 12px; color: var(--text-secondary); font-weight: 500; }
+        .summary-value { font-size: 20px; font-weight: 700; }
+        .main-wrapper { margin: 0 12px 12px 12px; }
+        .card { background: var(--bg-card); border-radius: var(--radius-box); box-shadow: var(--shadow-card); padding: 8px; overflow: hidden; border: 1px solid rgba(0,0,0,0.02); }
+        .gridjs-container { font-family: inherit; }
+        .gridjs-wrapper { border-radius: 8px !important; border: 1px solid rgba(0,0,0,0.05) !important; }
+        th.gridjs-th { background: #fbfbfd !important; font-size: 11px !important; color: var(--text-secondary) !important; font-weight: 700 !important; padding: 10px 12px !important; text-align: center !important; }
+        td.gridjs-td { border-bottom: 1px solid rgba(0,0,0,0.03) !important; padding: 10px 12px !important; font-size: 13px !important; color: var(--text-primary); }
+        .gridjs-tr:hover td.gridjs-td { background-color: rgba(0, 113, 227, 0.02) !important; }
+        .text-up { color: var(--red) !important; font-weight: 700; }
+        .text-down { color: var(--green) !important; font-weight: 700; }
+        .bg-up-light { background: rgba(255, 59, 48, 0.06); padding: 2px 6px; border-radius: 4px; }
+        .bg-down-light { background: rgba(52, 199, 89, 0.06); padding: 2px 6px; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <header class="header-area">
+        <div class="header-content">
+            <div class="brand-box"><div class="brand-logo">A</div><div class="brand-title">A-Share Pro <span style="font-size:12px; font-weight:normal; color:var(--text-secondary);">• 10年纯年报价值投资全景终端</span></div></div>
+            <div class="right-controls">
+                <div class="time-badge" id="sync-time">TERMINAL SYNC: LOADING...</div>
+                <div class="global-search-container">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="globalSearch" class="global-search-input" placeholder="输入股票代码或简称快速过滤...">
+                </div>
+            </div>
+        </div>
+    </header>
+    <section class="dashboard-summary">
+        <div class="summary-card"><span class="summary-label">终端核心标的</span><div class="summary-value" id="stat-total">--</div></div>
+        <div class="summary-card"><span class="summary-label">行业门类</span><div class="summary-value" id="stat-industries">--</div></div>
+        <div class="summary-card"><span class="summary-label">样本大盘单价</span><div class="summary-value" id="stat-avg-price">--</div></div>
+    </section>
+    <main class="main-wrapper"><div class="card"><div id="grid-master"></div></div></main>
+    <script src="https://unpkg.com/gridjs/dist/gridjs.umd.js"></script>
+    <script>
+        let ALL_DATA = [];
+        let gridMaster = null;
+        function generatePureMonthlySparkline(rowItem) {
+            const priceKeys = Object.keys(rowItem).filter(k => k.endsWith('_月初价')).sort();
+            if (priceKeys.length < 2) return '<span style="color:#bfbfbf; font-size:11px;">-</span>';
+            const values = priceKeys.map(k => parseFloat(rowItem[k])).filter(n => !isNaN(n));
+            const width = 110; const height = 28; const padding = 2;
+            const min = Math.min(...values); const max = Math.max(...values); const range = max - min || 1;
+            const startPrice = values[0]; const endPrice = values[values.length - 1];
+            const isUp = endPrice >= startPrice; const color = isUp ? '#ff3b30' : '#34c759';
+            const points = values.map((val, i) => {
+                const x = (i / (values.length - 1)) * width;
+                const y = (height - padding) - ((val - min) / range) * (height - 2 * padding);
+                return `${x},${y}`;
+            }).join(' ');
+            return `
+                <div style="display:flex; align-items:center; gap:8px; height:100%; justify-content: center;">
+                    <span style="font-size:10px; font-family:monospace; color:var(--text-secondary);">${startPrice.toFixed(0)}</span>
+                    <svg width="${width}" height="${height}" style="overflow:visible;">
+                        <polyline points="${points}" fill="none" stroke="${color}" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                    <span style="font-size:10px; font-family:monospace; color:${color}; font-weight:700;">${endPrice.toFixed(0)}</span>
+                </div>
+            `;
+        }
+        function calculateSummaryStats(data) {
+            document.getElementById('stat-total').innerHTML = `${data.length} 只核心标的`;
+            const industries = new Set(data.map(item => item['industry']).filter(Boolean));
+            document.getElementById('stat-industries').innerHTML = `${industries.size} 个门类`;
+            const prices = data.map(item => parseFloat(item['latest_price'])).filter(n => !isNaN(n) && n > 0);
+            const avgPrice = prices.length ? (prices.reduce((a, b) => a + b, 0) / prices.length).toFixed(2) : '--';
+            document.getElementById('stat-avg-price').innerHTML = `${avgPrice} 元`;
+        }
+        document.addEventListener('DOMContentLoaded', async function() {
+            try {
+                const res = await fetch('./data.json?t=' + new Date().getTime());
+                ALL_DATA = await res.json();
+                if (!ALL_DATA || ALL_DATA.length === 0) return;
+                calculateSummaryStats(ALL_DATA);
+                document.getElementById('sync-time').innerHTML = `RENDER REFRESH: ${new Date().toLocaleString()}`;
+                const isValid = (val) => val !== null && val !== undefined && !isNaN(parseFloat(val)) && String(val).trim() !== '';
+                const fullColumns = [
+                    { id: '代码', name: '代码', width: '85px', fixed: true },
+                    { id: '名称', name: '简称', width: '100px', fixed: true, formatter: (cell) => gridjs.html(`<b>${cell}</b>`) },
+                    { id: 'latest_price', name: '现价(元)', width: '90px', formatter: (cell) => gridjs.html(`<b>${isValid(cell)?parseFloat(cell).toFixed(2):'--'}</b>`) },
+                    {
+                        name: '10年历史月初第一天开盘价时序走势', width: '230px', sort: false,
+                        formatter: (_, row) => {
+                            const stockCode = row.cells[0].data;
+                            const stockData = ALL_DATA.find(d => d['代码'] === stockCode);
+                            return gridjs.html(generatePureMonthlySparkline(stockData));
+                        }
+                    },
+                    { id: 'pct_chg', name: '当期涨跌', width: '100px', formatter: (cell) => { const val = parseFloat(cell); if(!isValid(cell)) return '--'; if(val === 0) return '0.00%'; const cls = val > 0 ? 'bg-up-light text-up' : 'bg-down-light text-down'; return gridjs.html(`<span class="${cls}">${val>0?'+':''}${val.toFixed(2)}%</span>`); } },
+                    { id: 'total_mv', name: '总市值(亿)', width: '110px', formatter: (cell) => isValid(cell) ? `${(parseFloat(cell) / 10000).toFixed(1)}亿` : '--' },
+                    { id: 'turnover_ratio', name: '换手率', width: '90px', formatter: (cell) => isValid(cell) ? `${parseFloat(cell).toFixed(2)}%` : '--' },
+                    { id: 'roe', name: '10年复利 ROE (平均)', width: '160px', formatter: (c) => isValid(c) ? gridjs.html(`<span style="font-weight:600; color:${parseFloat(c)>=15?'var(--red)':'inherit'}">${parseFloat(c).toFixed(2)}%</span>`) : '--' },
+                    { id: 'roic', name: '10年平均 ROIC', width: '140px', formatter: (c) => isValid(c) ? `${parseFloat(c).toFixed(2)}%` : '--' },
+                    { id: 'gross_margin', name: '10年复合毛利率', width: '130px', formatter: (c) => isValid(c) ? `${parseFloat(c).toFixed(1)}%` : '--' },
+                    { id: 'net_margin', name: '10年复合净利率', width: '130px', formatter: (c) => isValid(c) ? `${parseFloat(c).toFixed(1)}%` : '--' },
+                    { id: 'free_cash_flow', name: '10年沉淀 FCF (万)', width: '140px', formatter: (c) => isValid(c) ? parseFloat(c).toFixed(0) : '--' },
+                    { id: 'cash_conversion', name: '利润现金含量', width: '110px', formatter: (c) => isValid(c) ? parseFloat(c).toFixed(2) : '--' },
+                    { id: 'debt_to_assets', name: '长期资产负债率', width: '130px', formatter: (c) => isValid(c) ? `${parseFloat(c).toFixed(1)}%` : '--' },
+                    { id: 'net_debt_ebitda', name: '净负债/EBITDA', width: '135px', formatter: (c) => isValid(c) ? parseFloat(c).toFixed(2) : '--' },
+                    { id: 'current_ratio', name: '流动比率', width: '100px', formatter: (c) => isValid(c) ? parseFloat(c).toFixed(2) : '--' },
+                    { id: 'revenue_yoy', name: '10年营收复合增速', width: '150px', formatter: (c) => isValid(c) ? `${parseFloat(c).toFixed(1)}%` : '--' },
+                    { id: 'net_profit_yoy', name: '10年净利复合增速', width: '150px', formatter: (c) => isValid(c) ? `${parseFloat(c).toFixed(1)}%` : '--' },
+                    { id: 'asset_turnover', name: '总资产周转率(次)', width: '140px', formatter: (c) => isValid(c) ? parseFloat(c).toFixed(2) : '--' },
+                    { id: 'pe_ttm', name: '当前滚动PE', width: '110px', formatter: (c) => isValid(c) ? parseFloat(c).toFixed(1) : '--' },
+                    { id: 'pb', name: '当前市净率PB', width: '110px', formatter: (c) => isValid(c) ? parseFloat(c).toFixed(1) : '--' },
+                    { id: 'dividend_yield', name: '10年平均分红股息', width: '140px', formatter: (c) => isValid(c) ? gridjs.html(`<span style="color:var(--accent);font-weight:600;">${parseFloat(c).toFixed(2)}%</span>`) : '--' }
+                ];
+                gridMaster = new gridjs.Grid({
+                    data: ALL_DATA, columns: fullColumns, pagination: { limit: 15 }, fixedHeader: true, height: '74vh', style: { table: { 'white-space': 'nowrap' } }
+                }).render(document.getElementById("grid-master"));
+                const searchInput = document.getElementById('globalSearch');
+                searchInput.addEventListener('input', function(e) {
+                    const keyword = e.target.value.toLowerCase().trim();
+                    const filtered = ALL_DATA.filter(item => (item['代码'] && item['代码'].includes(keyword)) || (item['名称'] && item['名称'].toLowerCase().includes(keyword)));
+                    gridMaster.updateConfig({ data: filtered }).forceRender();
+                });
+            } catch (error) { console.error("Layout Master Render Error:", error); }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,40 @@
+name: Update A-Share Data
+
+on:
+  schedule:
+    # 北京时间每天下午 16:30 自动运行
+    - cron: '30 8 * * *'
+  workflow_dispatch: # 允许你手动点击按钮测试
+
+jobs:
+  scrape-and-deploy:
+    runs-on: ubuntu-latest
+    
+    # 【重要】赋予写权限，这样才能把新数据存回 CSV
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+
+      - name: Run Crawler
+        run: |
+          python main.py
+
+      - name: Commit and Push Data
+        run: |
+          git config --global user.name 'GitHub Action'
+          git config --global user.email 'action@github.com'
+          git add .
+          git commit -m "Auto-update data $(date +'%Y-%m-%d')" || exit 0
+          git push
