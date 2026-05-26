@@ -11,8 +11,6 @@
             background-color: #f5f5f7;
             color: #1d1d1f;
         }
-        .purple-badge { background-color: #f3e8ff; color: #6b21a8; }
-        .yellow-badge { background-color: #fef9c3; color: #854d0e; }
     </style>
 </head>
 <body class="p-6 max-w-7xl mx-auto">
@@ -23,7 +21,7 @@
             <p class="text-xs text-gray-500 mt-1">📊 Tushare 官方原生序列 · 20年高精度月度纯真数内核</p>
         </div>
         <div class="text-right">
-            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 animate-pulse">
+            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
                 ● 实时解密连通中
             </span>
             <p class="text-[10px] text-gray-400 mt-1" id="compile-time"></p>
@@ -38,7 +36,7 @@
             </select>
         </div>
         <div class="bg-white p-4 rounded-2xl shadow-sm flex flex-col justify-center">
-            <label class="block text-xs font-medium text-gray-500 mb-2">🔍 全维模糊联动检索 (支持行业、股票名、代码、板块点杀)</label>
+            <label class="block text-xs font-medium text-gray-500 mb-2">🔍 全维模糊联动检索</label>
             <input type="text" id="search-input" placeholder="输入 '白酒'、'创业板'、'比亚迪' 或 '600036'..." class="block w-full rounded-xl border-gray-200 bg-gray-50 p-2.5 text-sm focus:border-blue-500 focus:ring-blue-500 outline-none transition-all">
         </div>
     </div>
@@ -78,21 +76,16 @@
         const tableBody = document.getElementById('table-body');
         const compileTimeEl = document.getElementById('compile-time');
 
-        // 设置编译发布时间戳
         compileTimeEl.innerText = `最后编译发布时刻: ${new Date().toLocaleString()}`;
 
-        // 异步核心加载管道
         async function initEngine() {
             try {
-                // 追加物理时间戳，彻底粉碎任何 CDN 或浏览器对 JSON 数据的强缓存
                 const response = await fetch(`data.json?cb=${Date.now()}`);
                 if (!response.ok) throw new Error("无法读取本地数据仓库 data.json");
                 rawData = await response.json();
                 
-                // 1. 动态抽取并清洗所有不重复的月度时间切片
-                const timePeriods = [...new Set(rawData.map(item => item.report_type))];
-                
-                // 🧠 排序核心算法：让时间轴按照从 2026 最新到 2007 历史进行倒序排列，体验极其顺滑
+                // 1. 动态获取并去重、排序时间切片
+                const timePeriods = [...new Set(rawData.map(item => item.report_type.trim()))];
                 timePeriods.sort((a, b) => b.localeCompare(a, 'zh-CN'));
 
                 timeSelect.innerHTML = '';
@@ -103,16 +96,23 @@
                     timeSelect.appendChild(opt);
                 });
 
-                // 2. 默认选中序列中的最新一个月度截面
-                if (timePeriods.length > 0) {
-                    timeSelect.value = timePeriods[0];
+                // 2. 🧠 智能寻找第一个真正拥有有效记录的月份作为默认显示，杜绝空白首屏
+                let defaultPeriod = timePeriods[0];
+                for (let period of timePeriods) {
+                    const hasData = rawData.some(item => item.report_type.trim() === period);
+                    if (hasData) {
+                        defaultPeriod = period;
+                        break;
+                    }
+                }
+                
+                if (defaultPeriod) {
+                    timeSelect.value = defaultPeriod;
                 }
 
-                // 3. 激活监听联动
                 timeSelect.addEventListener('change', renderDisplay);
                 searchInput.addEventListener('input', renderDisplay);
 
-                // 4. 首次渲染
                 renderDisplay();
 
             } catch (err) {
@@ -120,13 +120,11 @@
             }
         }
 
-        // 全自动渲染与跨行业排异引擎
         function renderDisplay() {
-            const selectedTime = timeSelect.value;
+            const selectedTime = timeSelect.value.trim();
             const keyword = searchInput.value.trim().toLowerCase();
 
-            // 过滤匹配当前选定时间轴与搜索关键词的数据
-            let filtered = rawData.filter(item => item.report_type === selectedTime);
+            let filtered = rawData.filter(item => item.report_type.trim() === selectedTime);
 
             if (keyword) {
                 filtered = filtered.filter(item => 
@@ -144,12 +142,10 @@
 
             tableBody.innerHTML = '';
             filtered.forEach(item => {
-                // 徽章美学逻辑判定
                 let boardClass = "bg-gray-100 text-gray-800";
                 if (item.board === "创业板") boardClass = "bg-emerald-50 text-emerald-700 border border-emerald-200";
                 if (item.board === "科创板") boardClass = "bg-rose-50 text-rose-700 border border-rose-200";
 
-                // 跨行业金融科目无损安全展示转换逻辑
                 const isFinancial = (item.industry === "银行" || item.industry === "保险" || item.industry === "证券");
                 const grossMarginText = isFinancial ? "-" : `${item.gross_margin.toFixed(1)}%`;
                 const netMarginText = isFinancial ? "-" : `${item.net_margin.toFixed(1)}%`;
@@ -187,7 +183,6 @@
             });
         }
 
-        // 引擎点火
         initEngine();
     </script>
 </body>
