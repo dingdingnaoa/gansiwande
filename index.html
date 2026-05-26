@@ -39,13 +39,15 @@
         select:focus, .apple-input:focus { background: #ffffff; border-color: var(--apple-primary); box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.15); }
         .table-responsive { overflow-x: auto; border-radius: var(--apple-radius); border: 1px solid #e5e5ea; background: #ffffff; }
         table { width: 100%; border-collapse: collapse; text-align: left; }
-        th { background-color: #f5f5f7; color: var(--apple-text-main); font-weight: 600; font-size: 13px; padding: 16px; border-bottom: 1px solid #e5e5ea; white-space: nowrap; cursor: pointer; user-select: none; }
+        th { background-color: #f5f5f7; color: var(--apple-text-main); font-weight: 600; font-size: 13px; padding: 14px 12px; border-bottom: 1px solid #e5e5ea; white-space: nowrap; cursor: pointer; user-select: none; text-align: center; }
         th:hover { background-color: #e8e8ed; }
-        th::after { content: " ⇅"; opacity: 0.3; font-size: 11px; }
-        td { padding: 16px; border-bottom: 1px solid #f5f5f7; font-size: 13.5px; white-space: nowrap; }
+        td { padding: 14px 12px; border-bottom: 1px solid #f5f5f7; font-size: 13px; white-space: nowrap; text-align: center; }
         tr:hover td { background-color: #f5f5f7; }
-        .col-now { background-color: #fffde7 !important; font-weight: 500; }
-        .col-hist { background-color: #f3e5f5 !important; font-weight: 500; }
+        
+        /* 🍎 经典双轴比对颜色对齐规范 */
+        .col-now { background-color: #fffde7 !important; font-weight: 500; color: #b71c1c; }
+        .col-hist { background-color: #f3e5f5 !important; font-weight: 500; color: #4a148c; }
+        
         .avg-row td { background-color: #f4fbfc !important; font-weight: 600; color: var(--apple-primary); border-top: 2px solid rgba(0, 113, 227, 0.1); }
         .counter { margin-top: 20px; font-size: 13px; color: var(--apple-text-secondary); border-top: 1px dashed #e5e5ea; padding-top: 14px; }
         .badge { padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; }
@@ -60,73 +62,80 @@
         <header>
             <div>
                 <h2>A股多维指标全景看板</h2>
-                <div style="font-size: 14px; color: var(--apple-text-secondary); margin-top: 2px;">Automated Quantitative Analytics System</div>
+                <div style="font-size: 14px; color: var(--apple-text-secondary); margin-top: 2px;">Enterprise Multidimensional Analytics Platform</div>
             </div>
             <div class="time-monitor">
                 <div>当前系统时间：<span id="liveClock" class="time-live">00:00:00</span></div>
-                <div>内核最后编译：<span id="lastModified">-</span></div>
+                <div>安全审计节点：<span id="lastModified">-</span></div>
             </div>
         </header>
 
         <div class="card">
             <div class="control-header">
-                <div class="control-title">高阶量化交易终端 (Lazy Loading 无未来函数版)</div>
-                <button onclick="forceReRun()" style="background:var(--apple-primary); color:#white; border:none; padding:8px 16px; border-radius:8px; color:white; font-size:13px; cursor:pointer;">🔄 分档极速重算</button>
+                <div class="control-title">高阶量化交易终端 (15大财务指标 Now vs History 终极比对版)</div>
+                <button onclick="onYearMasterChange()" style="background:var(--apple-primary); color:white; border:none; padding:8px 16px; border-radius:8px; font-size:13px; cursor:pointer;">🔄 重新同步数据</button>
             </div>
             
             <div class="selector-row">
                 <div class="selector-item">
-                    <label for="yearFilterSelect">年份跨度选择:</label>
+                    <label for="yearFilterSelect">跨周期年份选择 (显示该年年报值):</label>
                     <select id="yearFilterSelect" onchange="onYearMasterChange()">
-                        </select>
-                </div>
-                
-                <div class="selector-item">
-                    <label for="monthSelect">精细化观测月度:</label>
-                    <select id="monthSelect" onchange="calculateAndRender()">
                         </select>
                 </div>
 
                 <div class="selector-item">
                     <label for="stockSearchInput">实时模糊筛选:</label>
-                    <input type="text" id="stockSearchInput" class="apple-input" style="width:260px;" placeholder="代码 / 名称 / 行业分类..." oninput="calculateAndRender()">
+                    <input type="text" id="stockSearchInput" class="apple-input" style="width:300px;" placeholder="股票代码 / 名称 / 行业板块..." oninput="calculateAndRender()">
                 </div>
             </div>
 
-            <div class="counter" id="dataStatus">数据管道初始化中...</div>
+            <div class="counter" id="dataStatus">数据管道安全自检中...</div>
         </div>
 
         <div class="table-responsive">
             <table id="metricsTable">
                 <thead>
                     <tr>
-                        <th onclick="sortTable('report_type')">精准报告期</th>
-                        <th onclick="sortTable('ts_code')">股票代码</th>
-                        <th onclick="sortTable('name')">股票名称</th>
-                        <th onclick="sortTable('industry')">所属行业</th>
-                        <th onclick="sortTable('board')">分类板块</th>
-                        <th onclick="sortTable('now_price')" style="color:#b71c1c; background:#fffde7;">最新股价(元)</th>
-                        <th onclick="sortTable('history_price')" style="color:#4a148c; background:#f3e5f5;">历史某刻股价(元)</th>
-                        <th onclick="sortTable('now_mv')" style="color:#b71c1c; background:#fffde7;">最新市值(亿)</th>
-                        <th onclick="sortTable('total_mv')" style="color:#4a148c; background:#f3e5f5;">历史某刻市值(亿)</th>
-                        <th onclick="sortTable('now_turnover')" style="color:#b71c1c; background:#fffde7;">最新换手(%)</th>
-                        <th onclick="sortTable('turnover_ratio')" style="color:#4a148c; background:#f3e5f5;">历史某刻换手(%)</th>
-                        <th onclick="sortTable('now_pe')" style="color:#b71c1c; background:#fffde7;">最新PE</th>
-                        <th onclick="sortTable('pe')" style="color:#4a148c; background:#f3e5f5;">历史某刻PE</th>
-                        <th onclick="sortTable('now_pb')" style="color:#b71c1c; background:#fffde7;">最新PB</th>
-                        <th onclick="sortTable('pb')" style="color:#4a148c; background:#f3e5f5;">历史某刻PB</th>
-                        <th onclick="sortTable('dv_ratio')">股息率(%)</th>
-                        <th onclick="sortTable('roe')">ROE(%)</th>
-                        <th onclick="sortTable('roa')">ROA(%)</th>
-                        <th onclick="sortTable('revenue_growth')">营收增速(%)</th>
-                        <th onclick="sortTable('profit_growth')">净利增速(%)</th>
-                        <th onclick="sortTable('gross_margin')">毛利率(%)</th>
-                        <th onclick="sortTable('net_margin')">净利率(%)</th>
-                        <th onclick="sortTable('debt_asset_ratio')">资产负债率(%)</th>
-                        <th onclick="sortTable('current_ratio')">流动比</th>
-                        <th onclick="sortTable('quick_ratio')">速动比</th>
-                        <th onclick="sortTable('bps')">每股净资产</th>
-                        <th onclick="sortTable('cfps')">每股现金流</th>
+                        <th rowspan="2" onclick="sortTable('ts_code')">股票代码</th>
+                        <th rowspan="2" onclick="sortTable('name')">股票名称</th>
+                        <th rowspan="2" onclick="sortTable('industry')">所属行业</th>
+                        <th rowspan="2" onclick="sortTable('board')">分类板块</th>
+                        <th colspan="2" style="background:#fffde7; color:#b71c1c;">价格对比(元)</th>
+                        <th colspan="2" style="background:#f3e5f5; color:#4a148c;">总市值对比(亿)</th>
+                        <th colspan="2" style="background:#fffde7; color:#b71c1c;">换手率对比(%)</th>
+                        <th colspan="2" style="background:#f3e5f5; color:#4a148c;">市盈率 PE 对比</th>
+                        <th colspan="2" style="background:#fffde7; color:#b71c1c;">市净率 PB 对比</th>
+                        <th colspan="2" style="background:#f3e5f5; color:#4a148c;">股息率对比(%)</th>
+                        <th colspan="2" style="background:#fffde7; color:#b71c1c;">核心 ROE 对比(%)</th>
+                        <th colspan="2" style="background:#f3e5f5; color:#4a148c;">总资产 ROA 对比(%)</th>
+                        <th colspan="2" style="background:#fffde7; color:#b71c1c;">营收增速对比(%)</th>
+                        <th colspan="2" style="background:#f3e5f5; color:#4a148c;">净利增速对比(%)</th>
+                        <th colspan="2" style="background:#fffde7; color:#b71c1c;">销售毛利率对比(%)</th>
+                        <th colspan="2" style="background:#f3e5f5; color:#4a148c;">销售净利率对比(%)</th>
+                        <th colspan="2" style="background:#fffde7; color:#b71c1c;">资产负债率对比(%)</th>
+                        <th colspan="2" style="background:#f3e5f5; color:#4a148c;">流动比率对比</th>
+                        <th colspan="2" style="background:#fffde7; color:#b71c1c;">速动比率对比</th>
+                        <th colspan="2" style="background:#f3e5f5; color:#4a148c;">每股净资产 BPS</th>
+                        <th colspan="2" style="background:#fffde7; color:#b71c1c;">每股现金流 CFPS</th>
+                    </tr>
+                    <tr>
+                        <th onclick="sortTable('now_price')" class="col-now">最新</th><th onclick="sortTable('history_price')" class="col-hist">历史</th>
+                        <th onclick="sortTable('now_mv')" class="col-now">最新</th><th onclick="sortTable('total_mv')" class="col-hist">历史</th>
+                        <th onclick="sortTable('now_turnover')" class="col-now">最新</th><th onclick="sortTable('turnover_ratio')" class="col-hist">历史</th>
+                        <th onclick="sortTable('now_pe')" class="col-now">最新</th><th onclick="sortTable('pe')" class="col-hist">历史</th>
+                        <th onclick="sortTable('now_pb')" class="col-now">最新</th><th onclick="sortTable('pb')" class="col-hist">历史</th>
+                        <th onclick="sortTable('now_dv_ratio')" class="col-now">最新</th><th onclick="sortTable('dv_ratio')" class="col-hist">历史</th>
+                        <th onclick="sortTable('now_roe')" class="col-now">最新</th><th onclick="sortTable('roe')" class="col-hist">历史</th>
+                        <th onclick="sortTable('now_roa')" class="col-now">最新</th><th onclick="sortTable('roa')" class="col-hist">历史</th>
+                        <th onclick="sortTable('now_revenue_growth')" class="col-now">最新</th><th onclick="sortTable('revenue_growth')" class="col-hist">历史</th>
+                        <th onclick="sortTable('now_profit_growth')" class="col-now">最新</th><th onclick="sortTable('profit_growth')" class="col-hist">历史</th>
+                        <th onclick="sortTable('now_gross_margin')" class="col-now">最新</th><th onclick="sortTable('gross_margin')" class="col-hist">历史</th>
+                        <th onclick="sortTable('now_net_margin')" class="col-now">最新</th><th onclick="sortTable('net_margin')" class="col-hist">历史</th>
+                        <th onclick="sortTable('now_debt_asset_ratio')" class="col-now">最新</th><th onclick="sortTable('debt_asset_ratio')" class="col-hist">历史</th>
+                        <th onclick="sortTable('now_current_ratio')" class="col-now">最新</th><th onclick="sortTable('current_ratio')" class="col-hist">历史</th>
+                        <th onclick="sortTable('now_quick_ratio')" class="col-now">最新</th><th onclick="sortTable('quick_ratio')" class="col-hist">历史</th>
+                        <th onclick="sortTable('now_bps')" class="col-now">最新</th><th onclick="sortTable('bps')" class="col-hist">历史</th>
+                        <th onclick="sortTable('now_cfps')" class="col-now">最新</th><th onclick="sortTable('cfps')" class="col-hist">历史</th>
                     </tr>
                 </thead>
                 <tbody id="tableBody"></tbody>
@@ -144,7 +153,6 @@
             document.getElementById('lastModified').innerText = new Date(document.lastModified).toLocaleString();
         }
 
-        // 初始化一键拉取总索引结构，动态铺设大年份主控台
         async function bootMasterSelector() {
             try {
                 const masterRes = await fetch('data.json?cb=' + Date.now());
@@ -159,39 +167,25 @@
                     yearFilterSelect.appendChild(opt);
                 });
                 
-                // 默认唤醒最新的一年数据分档
                 await onYearMasterChange();
             } catch {
-                document.getElementById('dataStatus').innerText = "⚠️ 中央索引管道加载失败";
+                document.getElementById('dataStatus').innerText = "⚠️ 中央索引加载失败";
             }
         }
 
-        // 🧠 核心优化：按年惰性加载函数（Lazy Loading Core）
+        // 🧠 核心优化：读取专属独立文件夹 data_slices/ 下的按年归档切片子数据
         async function onYearMasterChange() {
             const selectedYear = document.getElementById('yearFilterSelect').value;
-            document.getElementById('dataStatus').innerText = `⏳ 正在惰性调取轻量级分档子库 data_${selectedYear}.json ...`;
+            document.getElementById('dataStatus').innerText = `⏳ 正在通过物理独立夹调用 data_slices/data_${selectedYear}.json ...`;
             
             try {
-                // 单独获取该年份的切片微型JSON，物理上抹平几万条大数据一次性加载产生的DOM渲染死锁
-                const res = await fetch(`data_${selectedYear}.json?cb=${Date.now()}`);
+                const res = await fetch(`data_slices/data_${selectedYear}.json?cb=${Date.now()}`);
                 const loadedSlice = await res.json();
                 yearCachedData = Array.isArray(loadedSlice) ? loadedSlice : [];
-
-                // 刷新该年份下的细化月度下拉联动
-                const monthSelect = document.getElementById('monthSelect');
-                const availableMonths = [...new Set(yearCachedData.map(item => item.report_type.trim()))].sort((a,b)=>b.localeCompare(a));
-                
-                monthSelect.innerHTML = '';
-                availableMonths.forEach(m => {
-                    const opt = document.createElement('option');
-                    opt.value = m; opt.innerText = m;
-                    monthSelect.appendChild(opt);
-                });
-
-                document.getElementById('dataStatus').innerText = `✨ 数据分档加载成功！当前年份有有效记录 ${yearCachedData.length} 条。`;
+                document.getElementById('dataStatus').innerText = `✨ data_slices/ 独立文件夹分区读取完成！已自动加载该年年报核心切面。`;
                 calculateAndRender();
             } catch {
-                document.getElementById('dataStatus').innerText = `⚠️ data_${selectedYear}.json 数据子库尚在盘后清算中`;
+                document.getElementById('dataStatus').innerText = `⚠️ 独立分区子库读取失败，请检查文件是否存在`;
             }
         }
 
@@ -204,10 +198,16 @@
         function calculateAndRender() {
             const tbody = document.getElementById('tableBody');
             tbody.innerHTML = "";
-            const currentMonthSlice = document.getElementById('monthSelect').value;
             const searchKeyword = document.getElementById('stockSearchInput').value.trim().toLowerCase();
 
-            let displaySet = yearCachedData.filter(item => item.report_type.trim() === currentMonthSlice.trim());
+            // 🎯 核心优化：前台去掉月份下拉，默认在后端全量月份数据中锁定 month === 12 （即年报）进行精确定向比对呈现
+            let displaySet = yearCachedData.filter(item => item.month === 12);
+            
+            // 如果某年刚上市（比如年末还没到12月），退一步选择该年库里的最后一条有效记录
+            if (displaySet.length === 0 && yearCachedData.length > 0) {
+                const maxMonth = Math.max(...yearCachedData.map(o => o.month));
+                displaySet = yearCachedData.filter(item => item.month === maxMonth);
+            }
 
             if (searchKeyword) {
                 displaySet = displaySet.filter(item => 
@@ -217,19 +217,27 @@
                 );
             }
 
-            if (!Array.isArray(displaySet) || displaySet.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="27" style="text-align:center;color:#86868b;padding:50px;">🔍 暂无符合条件的个股真数记录（当时可能未上市）</td></tr>`;
-                return;
-            }
-
             if (currentSortField) {
                 displaySet.sort((a,b) => {
-                    let vA = a[currentSortField], vB = b[currentSortField];
+                    let vA = a[currentSortField] || 0, vB = b[currentSortField] || 0;
                     return currentSortOrder === 'asc' ? (vA - vB) : (vB - vA);
                 });
             }
 
-            const numericFields = ['now_price','history_price','now_mv','total_mv','now_turnover','turnover_ratio','now_pe','pe','now_pb','pb','dv_ratio','roe','roa','revenue_growth','profit_growth','gross_margin','net_margin','debt_asset_ratio','current_ratio','quick_ratio','bps','cfps'];
+            if (displaySet.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="34" style="text-align:center;color:#86868b;padding:50px;">🔍 暂无匹配年报记录</td></tr>`;
+                return;
+            }
+
+            // 全量 15 个量化财务指标的求和字典（用于截面均值算术计算）
+            const numericFields = [
+                'now_price','history_price','now_mv','total_mv','now_turnover','turnover_ratio',
+                'now_pe','pe','now_pb','pb','now_dv_ratio','dv_ratio','now_roe','roe','now_roa','roa',
+                'now_revenue_growth','revenue_growth','now_profit_growth','profit_growth',
+                'now_gross_margin','gross_margin','now_net_margin','net_margin',
+                'now_debt_asset_ratio','debt_asset_ratio','now_current_ratio','current_ratio',
+                'now_quick_ratio','quick_ratio','now_bps','bps','now_cfps','cfps'
+            ];
             let sums = {}; numericFields.forEach(f => sums[f] = 0);
 
             displaySet.forEach(stock => {
@@ -239,41 +247,53 @@
                 if (stock.board === "科创板") badge = `<span class="badge badge-kc">科创板</span>`;
 
                 const isFinancial = (stock.industry === "银行" || stock.industry === "保险" || stock.industry === "证券");
+
                 row.innerHTML = `
-                    <td style="color:var(--apple-primary); font-weight:600;">${stock.report_type}</td>
-                    <td style="font-family:monospace;">${stock.ts_code}</td>
+                    <td style="font-family:monospace; font-weight:600;">${stock.ts_code}</td>
                     <td><strong>${stock.name}</strong></td><td>${stock.industry}</td><td>${badge}</td>
+                    
                     <td class="col-now">${format(stock.now_price)}</td><td class="col-hist">${format(stock.history_price)}</td>
                     <td class="col-now">${format(stock.now_mv)}</td><td class="col-hist">${format(stock.total_mv)}</td>
                     <td class="col-now">${format(stock.now_turnover)}%</td><td class="col-hist">${format(stock.turnover_ratio)}%</td>
                     <td class="col-now">${stock.now_pe>0?format(stock.now_pe):'-'}</td><td class="col-hist">${stock.pe>0?format(stock.pe):'-'}</td>
                     <td class="col-now">${stock.now_pb>0?format(stock.now_pb):'-'}</td><td class="col-hist">${stock.pb>0?format(stock.pb):'-'}</td>
-                    <td style="color:#10b981;">${format(stock.dv_ratio)}%</td><td>${format(stock.roe)}%</td><td>${format(stock.roa)}%</td>
-                    <td style="color:${stock.revenue_growth>=0?'#dc2626':'#16a34a'}">${stock.revenue_growth>=0?'+':''}${format(stock.revenue_growth)}%</td>
-                    <td style="color:${stock.profit_growth>=0?'#dc2626':'#16a34a'}">${stock.profit_growth>=0?'+':''}${format(stock.profit_growth)}%</td>
-                    <td>${isFinancial?'-':format(stock.gross_margin)+'%'}</td><td>${isFinancial?'-':format(stock.net_margin)+'%'}</td>
-                    <td>${stock.debt_asset_ratio>0?format(stock.debt_asset_ratio)+'%':'-'}</td><td>${stock.current_ratio>0?format(stock.current_ratio):'-'}</td><td>${stock.quick_ratio>0?format(stock.quick_ratio):'-'}</td><td>${stock.bps>0?format(stock.bps):'-'}</td><td>${format(stock.cfps)}</td>
+                    
+                    <td class="col-now">${format(stock.now_dv_ratio)}%</td><td class="col-hist">${format(stock.dv_ratio)}%</td>
+                    <td class="col-now">${format(stock.now_roe)}%</td><td class="col-hist">${format(stock.roe)}%</td>
+                    <td class="col-now">${format(stock.now_roa)}%</td><td class="col-hist">${format(stock.roa)}%</td>
+                    
+                    <td class="col-now">${format(stock.now_revenue_growth)}%</td><td class="col-hist">${format(stock.revenue_growth)}%</td>
+                    <td class="col-now">${format(stock.now_profit_growth)}%</td><td class="col-hist">${format(stock.profit_growth)}%</td>
+                    
+                    <td class="col-now">${isFinancial?'-':format(stock.now_gross_margin)+'%'}</td><td class="col-hist">${isFinancial?'-':format(stock.gross_margin)+'%'}</td>
+                    <td class="col-now">${isFinancial?'-':format(stock.now_net_margin)+'%'}</td><td class="col-hist">${isFinancial?'-':format(stock.net_margin)+'%'}</td>
+                    
+                    <td class="col-now">${stock.now_debt_asset_ratio>0?format(stock.now_debt_asset_ratio)+'%':'-'}</td><td class="col-hist">${stock.debt_asset_ratio>0?format(stock.debt_asset_ratio)+'%':'-'}</td>
+                    <td class="col-now">${stock.now_current_ratio>0?format(stock.now_current_ratio):'-'}</td><td class="col-hist">${stock.current_ratio>0?format(stock.current_ratio):'-'}</td>
+                    <td class="col-now">${stock.now_quick_ratio>0?format(stock.now_quick_ratio):'-'}</td><td class="col-hist">${stock.quick_ratio>0?format(stock.quick_ratio):'-'}</td>
+                    
+                    <td class="col-now">${stock.now_bps>0?format(stock.now_bps):'-'}</td><td class="col-hist">${stock.bps>0?format(stock.bps):'-'}</td>
+                    <td class="col-now">${format(stock.now_cfps)}</td><td class="col-hist">${format(stock.cfps)}</td>
                 `;
                 tbody.appendChild(row);
                 numericFields.forEach(f => sums[f] += (parseFloat(stock[f]) || 0));
             });
 
+            // 联动重绘底部算术算力均值栏
             let avgRow = document.createElement('tr'); avgRow.className = "avg-row";
             let len = displaySet.length;
-            avgRow.innerHTML = `
-                <td>-</td><td>-</td><td>📊 截面算术均值</td><td>-</td><td>-</td>
-                <td class="col-now">${format(sums['now_price']/len)}</td><td class="col-hist">${format(sums['history_price']/len)}</td>
-                <td class="col-now">${format(sums['now_mv']/len)}</td><td class="col-hist">${format(sums['total_mv']/len)}</td>
-                <td class="col-now">${format(sums['now_turnover']/len)}%</td><td class="col-hist">${format(sums['turnover_ratio']/len)}%</td>
-                <td class="col-now">${format(sums['now_pe']/len)}</td><td class="col-hist">${format(sums['pe']/len)}</td>
-                <td class="col-now">${format(sums['now_pb']/len)}</td><td class="col-hist">${format(sums['pb']/len)}</td>
-                <td>${format(sums['dv_ratio']/len)}%</td><td>${format(sums['roe']/len)}%</td><td>${format(sums['roa']/len)}%</td><td>${format(sums['revenue_growth']/len)}%</td><td>${format(sums['profit_growth']/len)}%</td><td>-</td><td>-</td><td>${format(sums['debt_asset_ratio']/len)}%</td><td>${format(sums['current_ratio']/len)}</td><td>${format(sums['quick_ratio']/len)}</td><td>${format(sums['bps']/len)}</td><td>${format(sums['cfps']/len)}</td>
-            `;
+            
+            let avgHtml = `<td>-</td><td>📊 截面算术均值</td><td>-</td><td>-</td>`;
+            numericFields.forEach(f => {
+                let isPct = f.includes('growth') || f.includes('margin') || f.includes('ratio') || f.includes('roe') || f.includes('roa') || f.includes('turnover');
+                let cls = f.includes('now') ? 'col-now' : 'col-hist';
+                avgHtml += `<td class="${cls}">${format(sums[f]/len)}${isPct?'%':''}</td>`;
+            });
+            avgRow.innerHTML = avgHtml;
             tbody.appendChild(avgRow);
         }
 
         function format(v) { return (v===undefined||v===null||isNaN(v)||v==='')?'-':parseFloat(v).toFixed(2); }
-        function forceReRun() { onYearMasterChange(); }
         window.onload = () => { startClock(); bootMasterSelector(); };
     </script>
 </body>

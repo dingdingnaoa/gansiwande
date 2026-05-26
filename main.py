@@ -5,7 +5,7 @@ import time
 import pandas as pd
 from datetime import datetime, timedelta
 
-print("🌐 [Enterprise Quant Kernel] 正在注入全套无未来函数防御机制的 20年月度重采样引擎...")
+print("🌐 [Enterprise Quant Kernel] 正在注入全量财务对比矩阵与独立分区文件引擎...")
 
 stock_configs = {
     "600519.SH": {"name": "贵州茅台", "industry": "白酒", "board": "主板"},
@@ -57,8 +57,22 @@ START_DATE = "20070101"
 END_DATE = target_trade_date_str
 all_records = []
 
+os.makedirs('data_slices', exist_ok=True)
+
+# 🚀 进阶修复优化：预先拉取 2026 当前最新的基本面，为所有的核心指标提供 Now(最新) 比对基准项
+latest_fina_dict = {}
+for code in stock_configs.keys():
+    try:
+        df_f = pro.fina_indicator(ts_code=code, start_date="20240101", end_date=END_DATE,
+                                  fields='end_date,roe,roa,gpm,npm,q_sales_yoy,q_netprof_yoy,debt_to_assets,current_ratio,quick_ratio,bps,cfps')
+        if df_f is not None and not df_f.empty:
+            df_f.sort_values('end_date', ascending=True, inplace=True)
+            latest_fina_dict[code] = df_f.iloc[-1].to_dict()
+    except:
+        pass
+
 for code, info in stock_configs.items():
-    print(f"📥 正在穿透无未来函数时空序列: {code} ({info['name']}) ...")
+    print(f"📥 正在穿透全量指标时空序列: {code} ({info['name']}) ...")
     
     try:
         df_all_daily = pro.daily_basic(ts_code=code, start_date=START_DATE, end_date=END_DATE,
@@ -74,13 +88,11 @@ for code, info in stock_configs.items():
         print(f"❌ 穿透历史行情失败: {api_err}")
         sys.exit(1)
 
-    # 全量拉取该个股历史各期财报披露序列，包含真实公告日期 ann_date
     fina_list = []
     try:
         df_fina = pro.fina_indicator(ts_code=code, start_date=START_DATE, end_date=END_DATE,
                                      fields='ann_date,end_date,roe,roa,gpm,npm,q_sales_yoy,q_netprof_yoy,debt_to_assets,current_ratio,quick_ratio,bps,cfps')
         if df_fina is not None and not df_fina.empty:
-            # 过滤掉公告日或报告期缺失的脏数据
             df_fina = df_fina.dropna(subset=['ann_date', 'end_date'])
             fina_list = df_fina.to_dict(orient='records')
     except:
@@ -92,20 +104,19 @@ for code, info in stock_configs.items():
     now_turnover = float(latest_row['turnover_rate']) if pd.notna(latest_row['turnover_rate']) else 0.0
     now_pe = float(latest_row['pe']) if pd.notna(latest_row['pe']) else 0.0
     now_pb = float(latest_row['pb']) if pd.notna(latest_row['pb']) else 0.0
+    now_dv = float(latest_row['dv_ratio']) if pd.notna(latest_row['dv_ratio']) else 0.0
+    
+    lf = latest_fina_dict.get(code, {})
 
     for m_date, row in df_monthly.iterrows():
-        current_month_end_str = row['trade_date'] # 历史当时这一天月末的价格截面 YYYYMMDD
+        current_month_end_str = row['trade_date']
         year_val = m_date.year
         month_val = m_date.month
         
-        # 🧠 终极防御：在财务披露序列中，动态匹配截至“当前月末这一天”，已经实际发布(ann_date <= 当前月末)的最新的财报，彻底斩断未来函数
         valid_fina = [f for f in fina_list if str(f['ann_date']) <= current_month_end_str]
-        
-        # 如果历史过早阶段还没有实际公布过任何财报，则退一步寻找 end_date 匹配作为过渡
         if not valid_fina:
             valid_fina = [f for f in fina_list if str(f['end_date']) <= f"{year_val}1231"]
             
-        # 按报告期倒序排列，取最近披露的那一期财报快照
         valid_fina.sort(key=lambda x: str(x['end_date']), reverse=True)
         f_data = valid_fina[0] if valid_fina else {}
 
@@ -119,21 +130,35 @@ for code, info in stock_configs.items():
             "industry": info["industry"],
             "board": info["board"],
             "year": int(year_val),
+            "month": int(month_val),
             "report_type": f"{year_val}年-{str(month_val).zfill(2)}月度",
             
+            # 🌟 修复 Bug 核心：全量补齐最新对比组，让后面所有财务指标都具备对比功能
             "now_price": now_price,
             "now_mv": now_mv,
             "now_turnover": now_turnover,
             "now_pe": now_pe,
             "now_pb": now_pb,
+            "now_dv_ratio": now_dv,
+            "now_roe": get_float(lf, 'roe'),
+            "now_roa": get_float(lf, 'roa'),
+            "now_revenue_growth": get_float(lf, 'q_sales_yoy'),
+            "now_profit_growth": get_float(lf, 'q_netprof_yoy'),
+            "now_gross_margin": get_float(lf, 'gpm'),
+            "now_net_margin": get_float(lf, 'npm'),
+            "now_debt_asset_ratio": get_float(lf, 'debt_to_assets'),
+            "now_current_ratio": get_float(lf, 'current_ratio'),
+            "now_quick_ratio": get_float(lf, 'quick_ratio'),
+            "now_bps": get_float(lf, 'bps'),
+            "now_cfps": get_float(lf, 'cfps'),
             
+            # 历史某一刻观测组
             "history_price": float(row['close']),
             "total_mv": float(row['total_mv'] / 10000) if row['total_mv'] else 0.0,
             "turnover_ratio": float(row['turnover_rate']) if pd.notna(row['turnover_rate']) else 0.0,
             "pe": float(row['pe']) if pd.notna(row['pe']) else 0.0,
             "pb": float(row['pb']) if pd.notna(row['pb']) else 0.0,
             "dv_ratio": float(row['dv_ratio']) if pd.notna(row['dv_ratio']) else 0.0,
-            
             "roe": get_float(f_data, 'roe'),
             "roa": get_float(f_data, 'roa'),
             "revenue_growth": get_float(f_data, 'q_sales_yoy'),
@@ -146,23 +171,17 @@ for code, info in stock_configs.items():
             "bps": get_float(f_data, 'bps'),
             "cfps": get_float(f_data, 'cfps')
         })
-    time.sleep(0.2)
+    time.sleep(0.1)
 
-# ==========================================
-# 🛑 性能级分档解耦优化 (Lazy Loading Slice Exporter)
-# ==========================================
-print("\n📦 正在执行大规模数据分档解耦，物理切碎全量大库并分年份单独压缩隔离...")
-
-# 首先完整导出总数据底座，给前端保留全面索引
+# 完整物理导出做底座
 with open('data.json', 'w', encoding='utf-8') as f:
     json.dump(all_records, f, ensure_ascii=False, indent=4)
 
-# 智能提取所有有效年份，将其拆分为独立的子 JSON 数据库（例如 data_2025.json），让前端单次请求体积狂降 90%
+# 🌟 将拆分的年份微型子库全部装入 data_slices/ 专属文件夹下
 years_set = set(r['year'] for r in all_records)
 for y in years_set:
     year_records = [r for r in all_records if r['year'] == y]
-    with open(f'data_{y}.json', 'w', encoding='utf-8') as f_year:
+    with open(f'data_slices/data_{y}.json', 'w', encoding='utf-8') as f_year:
         json.dump(year_records, f_year, ensure_ascii=False, indent=4)
 
-print(f"✅ [性能分档完成] 已自动切碎并独立导出 {len(years_set)} 个分年份物理微型数据库。")
-print("✨ [SUCCESS] main.py 终极重构大功告成！")
+print(f"✅ [重构成功] 全量历史月份序列已完美归档至 data.json 及 data_slices/ 独立文件夹下。")
