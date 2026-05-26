@@ -34,7 +34,6 @@
         .control-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; border-bottom: 1px solid #f5f5f7; padding-bottom: 14px; }
         .control-title { font-size: 16px; font-weight: 600; }
         
-        /* 🍏 苹果风精美下拉菜单与控制面板 */
         .selector-row { display: flex; flex-wrap: wrap; gap: 24px; margin-top: 16px; align-items: center; }
         .selector-item { display: flex; align-items: center; gap: 10px; }
         label { font-size: 14px; font-weight: 600; color: var(--apple-text-main); }
@@ -62,7 +61,6 @@
         
         table { width: 100%; border-collapse: collapse; text-align: left; }
         
-        /* 📊 支持排序的表头交互样式 */
         th {
             background-color: #f5f5f7;
             color: var(--apple-text-main);
@@ -81,8 +79,7 @@
         td { padding: 16px; border-bottom: 1px solid #f5f5f7; font-size: 13.5px; color: #333336; white-space: nowrap; }
         tr:hover td { background-color: #f5f5f7; }
         
-        /* 多重周期均值行精美高亮 */
-        .avg-row td { background-color: #f4fbfc !important; font-weight: 600; color: var(--apple-primary); border-top: 1px solid rgba(0, 113, 227, 0.1); }
+        .avg-row td { background-color: #f4fbfc !important; font-weight: 600; color: var(--apple-primary); border-top: 2px solid rgba(0, 113, 227, 0.1); }
         .counter { margin-top: 20px; font-size: 13px; color: var(--apple-text-secondary); border-top: 1px dashed #e5e5ea; padding-top: 14px; }
         .badge { padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; }
         .badge-main { background: #e1f5fe; color: #0288d1; }
@@ -106,7 +103,7 @@
 
         <div class="card">
             <div class="control-header">
-                <div class="control-title">高阶量化对冲控制台</div>
+                <div class="control-title">高阶量化交易终端</div>
                 <div class="btn-group">
                     <button class="btn-primary" onclick="manualRefresh()">🔄 强行同步清洗数据</button>
                 </div>
@@ -131,17 +128,8 @@
                 </div>
 
                 <div class="selector-item">
-                    <label for="spanSelect">多维对比历史跨度:</label>
-                    <select id="spanSelect" onchange="calculateAndRender()">
-                        <option value="3" selected>对比近 3 年历史均值</option>
-                        <option value="5">对比近 5 年历史均值</option>
-                        <option value="10">对比近 10 年历史均值</option>
-                    </select>
-                </div>
-
-                <div class="selector-item">
-                    <label for="stockSearchInput">实时精准检索:</label>
-                    <input type="text" id="stockSearchInput" class="apple-input" style="width:240px;" placeholder="代码/名称/行业/板块..." oninput="calculateAndRender()">
+                    <label for="stockSearchInput">列表实时筛选:</label>
+                    <input type="text" id="stockSearchInput" class="apple-input" style="width:280px;" placeholder="输入代码 / 名称 / 行业 / 板块..." oninput="calculateAndRender()">
                 </div>
             </div>
 
@@ -158,7 +146,8 @@
                         <th onclick="sortTable('industry')">所属行业</th>
                         <th onclick="sortTable('board')">分类板块</th>
                         <th onclick="sortTable('history_price')" style="color:var(--apple-primary);">所选时刻股价(元)</th>
-                        <th onclick="sortTable('now_price')" style="color:#e65100;">当前最新股价(元)</th> <th onclick="sortTable('total_mv')">总市值(亿)</th>
+                        <th onclick="sortTable('now_price')" style="color:#e65100;">当前最新股价(元)</th>
+                        <th onclick="sortTable('total_mv')">总市值(亿)</th>
                         <th onclick="sortTable('turnover_ratio')">换手率(%)</th>
                         <th onclick="sortTable('pe')">市盈率(PE)</th>
                         <th onclick="sortTable('pb')">市净率(PB)</th>
@@ -184,7 +173,7 @@
     <script {nonce}>
         let allFinancialData = [];
         let currentSortField = '';
-        let currentSortOrder = 'asc'; // 'asc' or 'desc'
+        let currentSortOrder = 'asc';
 
         function startAppleClock() {
             setInterval(() => {
@@ -214,13 +203,12 @@
             calculateAndRender();
         }
 
-        // 👑 智能表头中枢排序算法
         function sortTable(field) {
             if (currentSortField === field) {
                 currentSortOrder = currentSortOrder === 'asc' ? 'desc' : 'asc';
             } else {
                 currentSortField = field;
-                currentSortOrder = 'desc'; // 默认降序更符合金融直觉
+                currentSortOrder = 'desc'; 
             }
             calculateAndRender();
         }
@@ -230,18 +218,11 @@
             tbody.innerHTML = "";
 
             const selectedYear = parseInt(document.getElementById('yearSelect').value);
-            const selectedSpan = parseInt(document.getElementById('spanSelect').value);
             const searchKeyword = document.getElementById('stockSearchInput').value.trim().toLowerCase();
 
-            // 🧠 核心逻辑：获取基准年及其历史范围区间
-            const minYear = selectedYear - selectedSpan + 1;
-            const rangeYears = [];
-            for(let i = minYear; i <= selectedYear; i++) { rangeYears.push(i); }
-
-            // 1. 过滤出当前基准时刻（单选年份）的股票列表
+            // 🧠 严格只锁定当前选择年份的截面真数
             let baseData = allFinancialData.filter(item => intVal(item.year) === selectedYear);
 
-            // 2. 联动实时模糊检索
             if (searchKeyword) {
                 baseData = baseData.filter(item => {
                     return (item.ts_code || '').toLowerCase().includes(searchKeyword) ||
@@ -252,11 +233,10 @@
             }
 
             if (baseData.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="23" style="text-align:center; color:#86868b; padding:50px;">🔍 暂无符合当前筛选条件的股票记录</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="23" style="text-align:center; color:#86868b; padding:50px;">🔍 暂无符合当前年份和筛选条件的股票记录</td></tr>`;
                 return;
             }
 
-            // 3. 执行表头轻量级动态排序
             if (currentSortField) {
                 baseData.sort((a, b) => {
                     let valA = a[currentSortField];
@@ -275,11 +255,9 @@
                 'debt_asset_ratio', 'current_ratio', 'quick_ratio', 'bps', 'cfps'
             ];
             
-            // 初始化基准年加权总和容器
             let baseSums = {};
             numericFields.forEach(f => baseSums[f] = 0);
 
-            // 渲染明细行
             baseData.forEach(stock => {
                 let row = document.createElement('tr');
                 let boardBadge = `<span class="badge badge-main">主板</span>`;
@@ -316,30 +294,9 @@
                 numericFields.forEach(f => baseSums[f] += floatVal(stock[f]));
             });
 
-            // 4. 🧠 跨年多维历史大矩阵聚合均值计算（纵向穿透整个 data.json 数据仓库）
-            let historicalData = allFinancialData.filter(item => {
-                // 筛选出属于时间跨度区间内，且符合当前检索关键字的股票
-                const inRange = rangeYears.includes(intVal(item.year));
-                if (!inRange) return false;
-                if (searchKeyword) {
-                    return (item.ts_code || '').toLowerCase().includes(searchKeyword) ||
-                           (item.name || '').toLowerCase().includes(searchKeyword) ||
-                           (item.industry || '').toLowerCase().includes(searchKeyword) ||
-                           (item.board || '').toLowerCase().includes(searchKeyword);
-                }
-                return true;
-            });
-
-            let histSums = {};
-            numericFields.forEach(f => histSums[f] = 0);
-            historicalData.forEach(item => {
-                numericFields.forEach(f => histSums[f] += floatVal(item[f]));
-            });
-
             const baseLen = baseData.length;
-            const histLen = historicalData.length || 1;
 
-            // 渲染：当前时刻的股票截面均值行
+            // 👑 干净的纯年度横截面平均值行
             let avgRow = document.createElement('tr');
             avgRow.className = "avg-row";
             avgRow.innerHTML = `
@@ -369,38 +326,7 @@
             `;
             tbody.appendChild(avgRow);
 
-            // 渲染：跨年周期时间轴纵向均值分析行
-            let timelineRow = document.createElement('tr');
-            timelineRow.className = "avg-row";
-            timelineRow.style = "color:#e65100;";
-            timelineRow.innerHTML = `
-                <td style="background:#fff8e1 !important; color:#e65100;">区跨度均值</td>
-                <td>-</td>
-                <td style="color:#e65100;">⏳ 历史 [近${selectedSpan}年] 纵向动态均值</td>
-                <td>-</td>
-                <td>-</td>
-                <td style="color:#e65100;">${formatNum(histSums['history_price'] / histLen)}</td>
-                <td style="color:#e65100;">${formatNum(histSums['now_price'] / histLen)}</td>
-                <td style="color:#e65100;">${formatNum(histSums['total_mv'] / histLen)}</td>
-                <td style="color:#e65100;">${formatNum(histSums['turnover_ratio'] / histLen)}</td>
-                <td style="color:#e65100;">${formatNum(histSums['pe'] / histLen)}</td>
-                <td style="color:#e65100;">${formatNum(histSums['pb'] / histLen)}</td>
-                <td style="color:#e65100;">${formatNum(histSums['dv_ratio'] / histLen)}</td>
-                <td style="color:#e65100;">${formatNum(histSums['roe'] / histLen)}</td>
-                <td style="color:#e65100;">${formatNum(histSums['roa'] / histLen)}</td>
-                <td style="color:#e65100;">${formatNum(histSums['revenue_growth'] / histLen)}</td>
-                <td style="color:#e65100;">${formatNum(histSums['profit_growth'] / histLen)}</td>
-                <td style="color:#e65100;">${formatNum(histSums['gross_margin'] / histLen)}</td>
-                <td style="color:#e65100;">${formatNum(histSums['net_margin'] / histLen)}</td>
-                <td style="color:#e65100;">${formatNum(histSums['debt_asset_ratio'] / histLen)}</td>
-                <td style="color:#e65100;">${formatNum(histSums['current_ratio'] / histLen)}</td>
-                <td style="color:#e65100;">${formatNum(histSums['quick_ratio'] / histLen)}</td>
-                <td style="color:#e65100;">${formatNum(histSums['bps'] / histLen)}</td>
-                <td style="color:#e65100;">${formatNum(histSums['cfps'] / histLen)}</td>
-            `;
-            tbody.appendChild(timelineRow);
-
-            document.getElementById('dataStatus').innerText = `✨ 量化联动成功：当前截面样本 ${baseLen} 组 | 近 ${selectedSpan} 年横跨周期历史大洗数样本 ${histLen} 组。`;
+            document.getElementById('dataStatus').innerText = `✨ 截面运算成功：当前时刻共计有效筛选样本 ${baseLen} 组。`;
         }
 
         function formatNum(val) { return (val === undefined || val === null || isNaN(val) || val === '') ? '-' : parseFloat(val).toFixed(2); }
