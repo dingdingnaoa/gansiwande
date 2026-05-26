@@ -3,187 +3,384 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Enterprise Quant Engine - 真实量化序列终端</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>A股多维指标全景看板 - aiinvest.art</title>
     <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: #f5f5f7;
-            color: #1d1d1f;
+        :root {
+            --apple-bg: #f5f5f7;
+            --apple-card: #ffffff;
+            --apple-text-main: #1d1d1f;
+            --apple-text-secondary: #86868b;
+            --apple-primary: #0071e3;
+            --apple-primary-hover: #0077ed;
+            --apple-gray-border: #d2d2d7;
+            --apple-radius: 14px;
         }
+
+        body {
+            background-color: var(--apple-bg);
+            color: var(--apple-text-main);
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro SC", "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+            margin: 0;
+            padding: 40px 20px;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .container { max-width: 1440px; margin: 0 auto; }
+        header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 35px; padding: 0 8px; }
+        h2 { font-size: 30px; font-weight: 600; letter-spacing: -0.8px; margin: 0 0 6px 0; }
+        .time-monitor { text-align: right; font-size: 13px; color: var(--apple-text-secondary); line-height: 1.6; }
+        .time-live { font-family: "SF Mono", Menlo, Consolas, monospace; font-weight: 600; color: var(--apple-text-main); font-size: 14px; }
+        .card { background: var(--apple-card); border-radius: var(--apple-radius); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.02); border: 1px solid rgba(0, 0, 0, 0.01); padding: 28px; margin-bottom: 30px; }
+        .control-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; border-bottom: 1px solid #f5f5f7; padding-bottom: 14px; }
+        .control-title { font-size: 16px; font-weight: 600; }
+        
+        .selector-row { display: flex; flex-wrap: wrap; gap: 24px; margin-top: 16px; align-items: center; }
+        .selector-item { display: flex; align-items: center; gap: 10px; }
+        label { font-size: 14px; font-weight: 600; color: var(--apple-text-main); }
+        select, .apple-input {
+            padding: 10px 16px;
+            font-size: 13.5px;
+            border-radius: 8px;
+            border: 1px solid var(--apple-gray-border);
+            background: #f5f5f7;
+            color: var(--apple-text-main);
+            outline: none;
+            transition: all 0.2s ease;
+        }
+        select:focus, .apple-input:focus {
+            background: #ffffff;
+            border-color: var(--apple-primary);
+            box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.15);
+        }
+
+        .btn-group { display: flex; gap: 8px; }
+        button { background: #ffffff; border: 1px solid var(--apple-gray-border); color: var(--apple-text-main); padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 500; }
+        button:hover { background: #f5f5f7; border-color: var(--apple-text-main); }
+        button.btn-primary { background: var(--apple-primary); border-color: var(--apple-primary); color: #ffffff; }
+        
+        .table-responsive { overflow-x: auto; border-radius: var(--apple-radius); border: 1px solid #e5e5ea; background: #ffffff; }
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        
+        th {
+            background-color: #f5f5f7;
+            color: var(--apple-text-main);
+            font-weight: 600;
+            font-size: 13px;
+            padding: 16px;
+            border-bottom: 1px solid #e5e5ea;
+            white-space: nowrap;
+            cursor: pointer;
+            user-select: none;
+            transition: background 0.15s ease;
+        }
+        th:hover { background-color: #e8e8ed; }
+        th::after { content: " ⇅"; opacity: 0.3; font-size: 11px; }
+
+        td { padding: 16px; border-bottom: 1px solid #f5f5f7; font-size: 13.5px; color: #333336; white-space: nowrap; }
+        tr:hover td { background-color: #f5f5f7; }
+        
+        /* 🍏 精美指标轴底色划分 */
+        .col-now { background-color: #fffde7 !important; font-weight: 500; }
+        .col-hist { background-color: #f3e5f5 !important; font-weight: 500; }
+        
+        .avg-row td { background-color: #f4fbfc !important; font-weight: 600; color: var(--apple-primary); border-top: 2px solid rgba(0, 113, 227, 0.1); }
+        .counter { margin-top: 20px; font-size: 13px; color: var(--apple-text-secondary); border-top: 1px dashed #e5e5ea; padding-top: 14px; }
+        .badge { padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; }
+        .badge-main { background: #e1f5fe; color: #0288d1; }
+        .badge-cy { background: #e8f5e9; color: #388e3c; }
+        .badge-kc { background: #fff3e0; color: #f57c00; }
     </style>
 </head>
-<body class="p-6 max-w-7xl mx-auto">
+<body>
 
-    <div class="flex justify-between items-center mb-6 bg-white p-4 rounded-2xl shadow-sm">
-        <div>
-            <h1 class="text-xl font-semibold tracking-tight">🌐 Enterprise Quant Engine</h1>
-            <p class="text-xs text-gray-500 mt-1">📊 Tushare 官方原生序列 · 20年高精度月度纯真数内核</p>
-        </div>
-        <div class="text-right">
-            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                ● 实时解密连通中
-            </span>
-            <p class="text-[10px] text-gray-400 mt-1" id="compile-time"></p>
-        </div>
-    </div>
+    <div class="container">
+        <header>
+            <div>
+                <h2>A股多维指标全景看板</h2>
+                <div style="font-size: 14px; color: var(--apple-text-secondary); margin-top: 2px;">Automated Financial Quantitative Analytics Dashboard</div>
+            </div>
+            <div class="time-monitor">
+                <div>当前系统时间：<span id="liveClock" class="time-live">00:00:00</span></div>
+                <div>内核最后编译：<span id="lastModified" style="font-weight:500;">-</span></div>
+            </div>
+        </header>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-        <div class="bg-white p-4 rounded-2xl shadow-sm flex flex-col justify-center">
-            <label class="block text-xs font-medium text-gray-500 mb-2">📅 穿透历史时间轴切片 (支持近20年月度快速回溯)</label>
-            <select id="time-select" class="block w-full rounded-xl border-gray-200 bg-gray-50 p-2.5 text-sm focus:border-blue-500 focus:ring-blue-500 outline-none transition-all">
-                <option value="">正在初始化中央时间轴...</option>
-            </select>
-        </div>
-        <div class="bg-white p-4 rounded-2xl shadow-sm flex flex-col justify-center">
-            <label class="block text-xs font-medium text-gray-500 mb-2">🔍 全维模糊联动检索</label>
-            <input type="text" id="search-input" placeholder="输入 '白酒'、'创业板'、'比亚迪' 或 '600036'..." class="block w-full rounded-xl border-gray-200 bg-gray-50 p-2.5 text-sm focus:border-blue-500 focus:ring-blue-500 outline-none transition-all">
-        </div>
-    </div>
+        <div class="card">
+            <div class="control-header">
+                <div class="control-title">高阶量化交易终端 (20年月度保真版)</div>
+                <div class="btn-group">
+                    <button class="btn-primary" onclick="manualRefresh()">🔄 强行同步清洗数据</button>
+                </div>
+            </div>
+            
+            <div class="selector-row">
+                <div class="selector-item">
+                    <label for="yearSelect">观测时空轴切片:</label>
+                    <select id="yearSelect" onchange="calculateAndRender()">
+                        <option value="">正在智能重采样时间轴...</option>
+                    </select>
+                </div>
 
-    <div class="bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-100">
-        <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse">
+                <div class="selector-item">
+                    <label for="stockSearchInput">列表实时筛选:</label>
+                    <input type="text" id="stockSearchInput" class="apple-input" style="width:280px;" placeholder="输入代码 / 名称 / 行业 / 板块..." oninput="calculateAndRender()">
+                </div>
+            </div>
+
+            <div class="counter" id="dataStatus">数据加载中...</div>
+        </div>
+
+        <div class="table-responsive">
+            <table id="metricsTable">
                 <thead>
-                    <tr class="bg-gray-50 border-b border-gray-100 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                        <th class="p-4">资产档案</th>
-                        <th class="p-4 bg-yellow-50/50 text-yellow-900">最新价格 (元)</th>
-                        <th class="p-4 bg-yellow-50/50 text-yellow-900">最新市值 (亿)</th>
-                        <th class="p-4 bg-purple-50/50 text-purple-900">历史某刻股价 (元)</th>
-                        <th class="p-4 bg-purple-50/50 text-purple-900">历史总市值 (亿)</th>
-                        <th class="p-4">换手率</th>
-                        <th class="p-4">PE (TTM)</th>
-                        <th class="p-4">PB</th>
-                        <th class="p-4">股息率</th>
-                        <th class="p-4">ROE (%)</th>
-                        <th class="p-4">毛利率 / 净利率</th>
-                        <th class="p-4">营收 / 净利增速</th>
+                    <tr>
+                        <th onclick="sortTable('report_type')">精准报告期</th>
+                        <th onclick="sortTable('ts_code')">股票代码</th>
+                        <th onclick="sortTable('name')">股票名称</th>
+                        <th onclick="sortTable('industry')">所属行业</th>
+                        <th onclick="sortTable('board')">分类板块</th>
+                        
+                        <th onclick="sortTable('now_price')" style="color:#b71c1c; background:#fffde7;">最新股价(元)</th>
+                        <th onclick="sortTable('history_price')" style="color:#4a148c; background:#f3e5f5;">历史某刻股价(元)</th>
+                        
+                        <th onclick="sortTable('now_mv')" style="color:#b71c1c; background:#fffde7;">最新市值(亿)</th>
+                        <th onclick="sortTable('total_mv')" style="color:#4a148c; background:#f3e5f5;">历史某刻市值(亿)</th>
+                        
+                        <th onclick="sortTable('now_turnover')" style="color:#b71c1c; background:#fffde7;">最新换手(%)</th>
+                        <th onclick="sortTable('turnover_ratio')" style="color:#4a148c; background:#f3e5f5;">历史某刻换手(%)</th>
+                        
+                        <th onclick="sortTable('now_pe')" style="color:#b71c1c; background:#fffde7;">最新PE</th>
+                        <th onclick="sortTable('pe')" style="color:#4a148c; background:#f3e5f5;">历史某刻PE</th>
+                        
+                        <th onclick="sortTable('now_pb')" style="color:#b71c1c; background:#fffde7;">最新PB</th>
+                        <th onclick="sortTable('pb')" style="color:#4a148c; background:#f3e5f5;">历史某刻PB</th>
+                        
+                        <th onclick="sortTable('dv_ratio')">股息率(%)</th>
+                        <th onclick="sortTable('roe')">ROE(%)</th>
+                        <th onclick="sortTable('roa')">ROA(%)</th>
+                        <th onclick="sortTable('revenue_growth')">营收增速(%)</th>
+                        <th onclick="sortTable('profit_growth')">净利增速(%)</th>
+                        <th onclick="sortTable('gross_margin')">毛利率(%)</th>
+                        <th onclick="sortTable('net_margin')">净利率(%)</th>
+                        <th onclick="sortTable('debt_asset_ratio')">资产负债率(%)</th>
+                        <th onclick="sortTable('current_ratio')">流动比</th>
+                        <th onclick="sortTable('quick_ratio')">速动比</th>
+                        <th onclick="sortTable('bps')">每股净资产</th>
+                        <th onclick="sortTable('cfps')">每股现金流</th>
                     </tr>
                 </thead>
-                <tbody id="table-body" class="divide-y divide-gray-100 text-sm">
-                    <tr>
-                        <td colspan="12" class="p-8 text-center text-gray-400">正在穿透 data.json 物理真数大仓库...</td>
-                    </tr>
-                </tbody>
+                <tbody id="tableBody"></tbody>
             </table>
         </div>
     </div>
 
-    <script>
-        let rawData = [];
-        const timeSelect = document.getElementById('time-select');
-        const searchInput = document.getElementById('search-input');
-        const tableBody = document.getElementById('table-body');
-        const compileTimeEl = document.getElementById('compile-time');
+    <script {nonce}>
+        let allFinancialData = [];
+        let currentSortField = '';
+        let currentSortOrder = 'desc';
 
-        compileTimeEl.innerText = `最后编译发布时刻: ${new Date().toLocaleString()}`;
+        function startAppleClock() {
+            setInterval(() => {
+                document.getElementById('liveClock').innerText = new Date().toTimeString().split(' ')[0];
+            }, 1000);
+            const modifyDate = new Date(document.lastModified);
+            document.getElementById('lastModified').innerText = modifyDate.getFullYear() + '-' + 
+                                  String(modifyDate.getMonth() + 1).padStart(2, '0') + '-' + 
+                                  String(modifyDate.getDate()).padStart(2, '0') + ' ' + 
+                                  modifyDate.toTimeString().split(' ')[0];
+        }
 
-        async function initEngine() {
+        async function manualRefresh() {
+            document.getElementById('dataStatus').innerText = "⏳ 正在穿透云端请求最新数据...";
+            await loadData();
+        }
+
+        async function loadData() {
             try {
-                const response = await fetch(`data.json?cb=${Date.now()}`);
-                if (!response.ok) throw new Error("无法读取本地数据仓库 data.json");
-                rawData = await response.json();
+                const response = await fetch('data.json?cb=' + new Date().getTime());
+                if (!response.ok) throw new Error();
+                const loadedData = await response.json();
                 
-                // 1. 动态获取并去重、排序时间切片
-                const timePeriods = [...new Set(rawData.map(item => item.report_type.trim()))];
+                // 强行进行数组类型断言，提升代码健壮性
+                allFinancialData = Array.isArray(loadedData) ? loadedData : [];
+                
+                // 智能抽取并过滤所有的不重复月度历史时间节点
+                const timePeriods = [...new Set(allFinancialData.map(item => item.report_type ? item.report_type.trim() : ''))].filter(Boolean);
                 timePeriods.sort((a, b) => b.localeCompare(a, 'zh-CN'));
 
-                timeSelect.innerHTML = '';
+                const yearSelect = document.getElementById('yearSelect');
+                yearSelect.innerHTML = '';
                 timePeriods.forEach(period => {
                     const opt = document.createElement('option');
                     opt.value = period;
                     opt.innerText = period;
-                    timeSelect.appendChild(opt);
+                    yearSelect.appendChild(opt);
                 });
 
-                // 2. 🧠 智能寻找第一个真正拥有有效记录的月份作为默认显示，杜绝空白首屏
+                // 默认选择最新的一期序列
                 let defaultPeriod = timePeriods[0];
                 for (let period of timePeriods) {
-                    const hasData = rawData.some(item => item.report_type.trim() === period);
-                    if (hasData) {
+                    if (allFinancialData.some(item => item.report_type && item.report_type.trim() === period)) {
                         defaultPeriod = period;
                         break;
                     }
                 }
-                
-                if (defaultPeriod) {
-                    timeSelect.value = defaultPeriod;
-                }
+                if (defaultPeriod) yearSelect.value = defaultPeriod;
 
-                timeSelect.addEventListener('change', renderDisplay);
-                searchInput.addEventListener('input', renderDisplay);
-
-                renderDisplay();
-
-            } catch (err) {
-                tableBody.innerHTML = `<tr><td colspan="12" class="p-8 text-center text-red-500 font-medium">❌ 终端熔断崩溃原因: ${err.message}</td></tr>`;
+                document.getElementById('dataStatus').innerText = `✨ 成功连通 20年月度时间大序列仓库！共捕获原始数据记录 ${allFinancialData.length} 条。`;
+            } catch (error) {
+                document.getElementById('dataStatus').innerText = "⚠️ 未读取到云端有效数据文件";
             }
+            calculateAndRender();
         }
 
-        function renderDisplay() {
-            const selectedTime = timeSelect.value.trim();
-            const keyword = searchInput.value.trim().toLowerCase();
+        function sortTable(field) {
+            if (currentSortField === field) {
+                currentSortOrder = currentSortOrder === 'asc' ? 'desc' : 'asc';
+            } else {
+                currentSortField = field;
+                currentSortOrder = 'desc'; 
+            }
+            calculateAndRender();
+        }
 
-            let filtered = rawData.filter(item => item.report_type.trim() === selectedTime);
+        function calculateAndRender() {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = "";
 
-            if (keyword) {
-                filtered = filtered.filter(item => 
-                    item.name.toLowerCase().includes(keyword) ||
-                    item.ts_code.toLowerCase().includes(keyword) ||
-                    item.industry.toLowerCase().includes(keyword) ||
-                    item.board.toLowerCase().includes(keyword)
-                );
+            const yearSelect = document.getElementById('yearSelect');
+            if (!yearSelect.value) return;
+            
+            const selectedTime = yearSelect.value.trim();
+            const searchKeyword = document.getElementById('stockSearchInput').value.trim().toLowerCase();
+
+            // 1. 根据时空轴过滤切面数据
+            let baseData = allFinancialData.filter(item => item.report_type && item.report_type.trim() === selectedTime);
+
+            // 2. 全维模糊过滤联动
+            if (searchKeyword) {
+                baseData = baseData.filter(item => {
+                    return (item.ts_code || '').toLowerCase().includes(searchKeyword) ||
+                           (item.name || '').toLowerCase().includes(searchKeyword) ||
+                           (item.industry || '').toLowerCase().includes(searchKeyword) ||
+                           (item.board || '').toLowerCase().includes(searchKeyword);
+                });
             }
 
-            if (filtered.length === 0) {
-                tableBody.innerHTML = `<tr><td colspan="12" class="p-8 text-center text-gray-400">无符合当前筛选条件的真数资产记录</td></tr>`;
+            if (!Array.isArray(baseData) || baseData.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="23" style="text-align:center; color:#86868b; padding:50px;">🔍 暂无符合当前筛选条件的资产真数记录（可能未上市）</td></tr>`;
                 return;
             }
 
-            tableBody.innerHTML = '';
-            filtered.forEach(item => {
-                let boardClass = "bg-gray-100 text-gray-800";
-                if (item.board === "创业板") boardClass = "bg-emerald-50 text-emerald-700 border border-emerald-200";
-                if (item.board === "科创板") boardClass = "bg-rose-50 text-rose-700 border border-rose-200";
+            // 3. 智能表头中枢排序算法
+            if (currentSortField) {
+                baseData.sort((a, b) => {
+                    let valA = a[currentSortField];
+                    let valB = b[currentSortField];
+                    if (!isNaN(valA) && !isNaN(valB)) {
+                        return currentSortOrder === 'asc' ? valA - valB : valB - valA;
+                    }
+                    return currentSortOrder === 'asc' ? 
+                        String(valA).localeCompare(String(valB)) : String(valB).localeCompare(String(valA));
+                });
+            }
 
-                const isFinancial = (item.industry === "银行" || item.industry === "保险" || item.industry === "证券");
-                const grossMarginText = isFinancial ? "-" : `${item.gross_margin.toFixed(1)}%`;
-                const netMarginText = isFinancial ? "-" : `${item.net_margin.toFixed(1)}%`;
+            const numericFields = [
+                'now_price', 'history_price', 'now_mv', 'total_mv', 'now_turnover', 'turnover_ratio',
+                'now_pe', 'pe', 'now_pb', 'pb', 'dv_ratio', 'roe', 'roa', 'revenue_growth', 'profit_growth',
+                'gross_margin', 'net_margin', 'debt_asset_ratio', 'current_ratio', 'quick_ratio', 'bps', 'cfps'
+            ];
+            
+            let baseSums = {};
+            numericFields.forEach(f => baseSums[f] = 0);
 
-                const tr = document.createElement('tr');
-                tr.className = "hover:bg-gray-50/80 transition-colors";
-                tr.innerHTML = `
-                    <td class="p-4 font-medium">
-                        <div class="text-gray-900 font-semibold">${item.name}</div>
-                        <div class="text-xs text-gray-400 mt-0.5">${item.ts_code}</div>
-                        <div class="flex gap-1.5 mt-1.5">
-                            <span class="px-2 py-0.5 text-[10px] rounded-md font-medium bg-gray-100 text-gray-600">${item.industry}</span>
-                            <span class="px-2 py-0.5 text-[10px] rounded-md font-medium ${boardClass}">${item.board}</span>
-                        </div>
-                    </td>
-                    <td class="p-4 font-bold text-yellow-800 bg-yellow-50/20">${item.now_price.toFixed(2)}</td>
-                    <td class="p-4 font-semibold text-yellow-700 bg-yellow-50/20">${item.now_mv.toFixed(1)}</td>
-                    <td class="p-4 font-bold text-purple-800 bg-purple-50/20">${item.history_price.toFixed(2)}</td>
-                    <td class="p-4 font-semibold text-purple-700 bg-purple-50/20">${item.total_mv.toFixed(1)}</td>
-                    <td class="p-4 text-gray-600">${item.turnover_ratio.toFixed(2)}%</td>
-                    <td class="p-4 text-gray-700 font-mono">${item.pe > 0 ? item.pe.toFixed(1) : '-'}</td>
-                    <td class="p-4 text-gray-700 font-mono">${item.pb > 0 ? item.pb.toFixed(1) : '-'}</td>
-                    <td class="p-4 text-emerald-700 font-medium">${item.dv_ratio.toFixed(2)}%</td>
-                    <td class="p-4 text-gray-900 font-semibold font-mono">${item.roe.toFixed(1)}%</td>
-                    <td class="p-4">
-                        <div class="text-xs font-medium text-gray-500">毛利: <span class="text-gray-800 font-mono">${grossMarginText}</span></div>
-                        <div class="text-xs font-medium text-gray-500 mt-0.5">净利: <span class="text-gray-800 font-mono">${netMarginText}</span></div>
-                    </td>
-                    <td class="p-4">
-                        <div class="text-xs text-gray-500">营收: <span class="${item.revenue_growth >= 0 ? 'text-red-600' : 'text-green-600'} font-mono">${item.revenue_growth >= 0 ? '+' : ''}${item.revenue_growth.toFixed(1)}%</span></div>
-                        <div class="text-xs text-gray-500 mt-0.5">净利: <span class="${item.profit_growth >= 0 ? 'text-red-600' : 'text-green-600'} font-mono">${item.profit_growth >= 0 ? '+' : ''}${item.profit_growth.toFixed(1)}%</span></div>
-                    </td>
+            // 4. 渲染明细列表行
+            baseData.forEach(stock => {
+                let row = document.createElement('tr');
+                let boardBadge = `<span class="badge badge-main">主板</span>`;
+                if (stock.board === "创业板") boardBadge = `<span class="badge badge-cy">创业板</span>`;
+                if (stock.board === "科创板") boardBadge = `<span class="badge badge-kc">科创板</span>`;
+
+                // 跨行业金融股毛利率/净利率排除兼容逻辑
+                const isFinancial = (stock.industry === "银行" || stock.industry === "保险" || stock.industry === "证券");
+                const grossMarginText = isFinancial ? "-" : `${formatNum(stock.gross_margin)}%`;
+                const netMarginText = isFinancial ? "-" : `${formatNum(stock.net_margin)}%`;
+
+                row.innerHTML = `
+                    <td style="color:#0071e3; font-weight:600; background:#fbfdff;">${stock.report_type || '-'}</td>
+                    <td style="font-family: monospace;">${stock.ts_code || '-'}</td>
+                    <td><strong>${stock.name || '-'}</strong></td>
+                    <td style="color:#555;">${stock.industry || '-'}</td>
+                    <td>${boardBadge}</td>
+                    
+                    <td class="col-now">${formatNum(stock.now_price)}</td>
+                    <td class="col-hist">${formatNum(stock.history_price)}</td>
+                    <td class="col-now">${formatNum(stock.now_mv)}</td>
+                    <td class="col-hist">${formatNum(stock.total_mv)}</td>
+                    <td class="col-now">${formatNum(stock.now_turnover)}%</td>
+                    <td class="col-hist">${formatNum(stock.turnover_ratio)}%</td>
+                    <td class="col-now">${stock.now_pe > 0 ? formatNum(stock.now_pe) : '-'}</td>
+                    <td class="col-hist">${stock.pe > 0 ? formatNum(stock.pe) : '-'}</td>
+                    <td class="col-now">${stock.now_pb > 0 ? formatNum(stock.now_pb) : '-'}</td>
+                    <td class="col-hist">${stock.pb > 0 ? formatNum(stock.pb) : '-'}</td>
+                    
+                    <td style="color:#10b981; font-weight:500;">${formatNum(stock.dv_ratio)}%</td>
+                    <td style="font-weight:600;">${formatNum(stock.roe)}%</td>
+                    <td>${formatNum(stock.roa)}%</td>
+                    <td style="color:${stock.revenue_growth >= 0 ? '#dc2626' : '#16a34a'}">${stock.revenue_growth >= 0 ? '+' : ''}${formatNum(stock.revenue_growth)}%</td>
+                    <td style="color:${stock.profit_growth >= 0 ? '#dc2626' : '#16a34a'}">${stock.profit_growth >= 0 ? '+' : ''}${formatNum(stock.profit_growth)}%</td>
+                    <td>${grossMarginText}</td>
+                    <td>${netMarginText}</td>
+                    <td>${stock.debt_asset_ratio > 0 ? formatNum(stock.debt_asset_ratio) + '%' : '-'}</td>
+                    <td>${stock.current_ratio > 0 ? formatNum(stock.current_ratio) : '-'}</td>
+                    <td>${stock.quick_ratio > 0 ? formatNum(stock.quick_ratio) : '-'}</td>
+                    <td>${stock.bps > 0 ? formatNum(stock.bps) : '-'}</td>
+                    <td>${formatNum(stock.cfps)}</td>
                 `;
-                tableBody.appendChild(tr);
+                tbody.appendChild(row);
+
+                numericFields.forEach(f => baseSums[f] += floatVal(stock[f]));
             });
+
+            const baseLen = baseData.length;
+
+            // 5. 优雅横截面平均值重算行
+            let avgRow = document.createElement('tr');
+            avgRow.className = "avg-row";
+            avgRow.innerHTML = `
+                <td style="background:#f4fbfc !important;">-</td><td>-</td><td>📊 所选截面横截面均值</td><td>-</td><td>-</td>
+                <td class="col-now">${formatNum(baseSums['now_price'] / baseLen)}</td>
+                <td class="col-hist">${formatNum(baseSums['history_price'] / baseLen)}</td>
+                <td class="col-now">${formatNum(baseSums['now_mv'] / baseLen)}</td>
+                <td class="col-hist">${formatNum(baseSums['total_mv'] / baseLen)}</td>
+                <td class="col-now">${formatNum(baseSums['now_turnover'] / baseLen)}%</td>
+                <td class="col-hist">${formatNum(baseSums['turnover_ratio'] / baseLen)}%</td>
+                <td class="col-now">${formatNum(baseSums['now_pe'] / baseLen)}</td>
+                <td class="col-hist">${formatNum(baseSums['pe'] / baseLen)}</td>
+                <td class="col-now">${formatNum(baseSums['now_pb'] / baseLen)}</td>
+                <td class="col-hist">${formatNum(baseSums['pb'] / baseLen)}</td>
+                
+                <td style="color:#10b981;">${formatNum(baseSums['dv_ratio'] / baseLen)}%</td>
+                <td>${formatNum(baseSums['roe'] / baseLen)}%</td>
+                <td>${formatNum(baseSums['roa'] / baseLen)}%</td>
+                <td>${formatNum(baseSums['revenue_growth'] / baseLen)}%</td>
+                <td>${formatNum(baseSums['profit_growth'] / baseLen)}%</td>
+                <td>-</td><td>-</td>
+                <td>${formatNum(baseSums['debt_asset_ratio'] / baseLen)}%</td>
+                <td>${formatNum(baseSums['current_ratio'] / baseLen)}</td>
+                <td>${formatNum(baseSums['quick_ratio'] / baseLen)}</td>
+                <td>${formatNum(baseSums['bps'] / baseLen)}</td>
+                <td>${formatNum(baseSums['cfps'] / baseLen)}</td>
+            `;
+            tbody.appendChild(avgRow);
+
+            document.getElementById('dataStatus').innerText = `✨ 量化对齐成功：当前观测时空交集有效标的 ${baseLen} 组 | 所有指标均已自动联动重算。`;
         }
 
-        initEngine();
+        function formatNum(val) { return (val === undefined || val === null || isNaN(val) || val === '') ? '-' : parseFloat(val).toFixed(2); }
+        function floatVal(val) { let f = parseFloat(val); return isNaN(f) ? 0 : f; }
+
+        window.onload = () => { startAppleClock(); loadData(); };
     </script>
 </body>
 </html>
