@@ -32,52 +32,36 @@
         .time-live { font-family: "SF Mono", Menlo, Consolas, monospace; font-weight: 600; color: var(--apple-text-main); font-size: 14px; }
         .card { background: var(--apple-card); border-radius: var(--apple-radius); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.02); border: 1px solid rgba(0, 0, 0, 0.01); padding: 28px; margin-bottom: 30px; }
         .control-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; border-bottom: 1px solid #f5f5f7; padding-bottom: 14px; }
-        .control-title { font-size: 16px; font-weight: 600; }
         
         .selector-row { display: flex; flex-wrap: wrap; gap: 24px; margin-top: 16px; align-items: center; }
         .selector-item { display: flex; align-items: center; gap: 10px; }
         label { font-size: 14px; font-weight: 600; color: var(--apple-text-main); }
         select, .apple-input {
-            padding: 10px 16px;
-            font-size: 13.5px;
-            border-radius: 8px;
-            border: 1px solid var(--apple-gray-border);
-            background: #f5f5f7;
-            color: var(--apple-text-main);
-            outline: none;
-            transition: all 0.2s ease;
+            padding: 10px 16px; font-size: 13.5px; border-radius: 8px; border: 1px solid var(--apple-gray-border);
+            background: #f5f5f7; color: var(--apple-text-main); outline: none; transition: all 0.2s ease;
         }
-        select:focus, .apple-input:focus {
-            background: #ffffff;
-            border-color: var(--apple-primary);
-            box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.15);
-        }
+        select:focus, .apple-input:focus { background: #ffffff; border-color: var(--apple-primary); box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.15); }
 
         .btn-group { display: flex; gap: 8px; }
         button { background: #ffffff; border: 1px solid var(--apple-gray-border); color: var(--apple-text-main); padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 500; }
-        button:hover { background: #f5f5f7; border-color: var(--apple-text-main); }
         button.btn-primary { background: var(--apple-primary); border-color: var(--apple-primary); color: #ffffff; }
-        .table-responsive { overflow-x: auto; border-radius: var(--apple-radius); border: 1px solid #e5e5ea; background: #ffffff; }
         
+        .table-responsive { overflow-x: auto; border-radius: var(--apple-radius); border: 1px solid #e5e5ea; background: #ffffff; }
         table { width: 100%; border-collapse: collapse; text-align: left; }
         
         th {
-            background-color: #f5f5f7;
-            color: var(--apple-text-main);
-            font-weight: 600;
-            font-size: 13px;
-            padding: 16px;
-            border-bottom: 1px solid #e5e5ea;
-            white-space: nowrap;
-            cursor: pointer;
-            user-select: none;
-            transition: background 0.15s ease;
+            background-color: #f5f5f7; color: var(--apple-text-main); font-weight: 600; font-size: 12.5px; padding: 14px 12px;
+            border-bottom: 1px solid #e5e5ea; white-space: nowrap; cursor: pointer; user-select: none; transition: background 0.15s ease;
         }
         th:hover { background-color: #e8e8ed; }
-        th::after { content: " ⇅"; opacity: 0.3; font-size: 11px; }
+        th::after { content: " ⇅"; opacity: 0.25; font-size: 10px; }
 
-        td { padding: 16px; border-bottom: 1px solid #f5f5f7; font-size: 13.5px; color: #333336; white-space: nowrap; }
+        td { padding: 14px 12px; border-bottom: 1px solid #f5f5f7; font-size: 13px; color: #333336; white-space: nowrap; }
         tr:hover td { background-color: #f5f5f7; }
+        
+        /* 🍏 指标轴双区精美底色定义 */
+        .col-now { background-color: #fffde7 !important; font-weight: 500; } /* 当前最新时刻高亮 */
+        .col-hist { background-color: #f3e5f5 !important; font-weight: 500; } /* 历史某时刻高亮 */
         
         .avg-row td { background-color: #f4fbfc !important; font-weight: 600; color: var(--apple-primary); border-top: 2px solid rgba(0, 113, 227, 0.1); }
         .counter { margin-top: 20px; font-size: 13px; color: var(--apple-text-secondary); border-top: 1px dashed #e5e5ea; padding-top: 14px; }
@@ -103,7 +87,7 @@
 
         <div class="card">
             <div class="control-header">
-                <div class="control-title">高阶量化交易终端</div>
+                <div class="control-title">多源交叉验证量化对冲终端</div>
                 <div class="btn-group">
                     <button class="btn-primary" onclick="manualRefresh()">🔄 强行同步清洗数据</button>
                 </div>
@@ -111,10 +95,9 @@
             
             <div class="selector-row">
                 <div class="selector-item">
-                    <label for="yearSelect">观测基准时刻:</label>
+                    <label for="yearSelect">历史对比时刻:</label>
                     <select id="yearSelect" onchange="calculateAndRender()">
                         <option value="2025" selected>2025年度</option>
-                        <option value="2026">2026年度 (至今)</option>
                         <option value="2024">2024年度</option>
                         <option value="2023">2023年度</option>
                         <option value="2022">2022年度</option>
@@ -140,18 +123,27 @@
             <table id="metricsTable">
                 <thead>
                     <tr>
-                        <th onclick="sortTable('report_type')">精准报告期</th>
+                        <th onclick="sortTable('report_type')">历史报告期</th>
                         <th onclick="sortTable('ts_code')">股票代码</th>
                         <th onclick="sortTable('name')">股票名称</th>
                         <th onclick="sortTable('industry')">所属行业</th>
                         <th onclick="sortTable('board')">分类板块</th>
-                        <th onclick="sortTable('history_price')" style="color:var(--apple-primary);">所选时刻股价(元)</th>
-                        <th onclick="sortTable('now_price')" style="color:#e65100;">当前最新股价(元)</th>
-                        <th onclick="sortTable('total_mv')">总市值(亿)</th>
-                        <th onclick="sortTable('turnover_ratio')">换手率(%)</th>
-                        <th onclick="sortTable('pe')">市盈率(PE)</th>
-                        <th onclick="sortTable('pb')">市净率(PB)</th>
-                        <th onclick="sortTable('dv_ratio')">股息率(%)</th>
+                        
+                        <th onclick="sortTable('now_price')" style="color:#b71c1c; background:#fffde7;">最新股价(元)</th>
+                        <th onclick="sortTable('history_price')" style="color:#4a148c; background:#f3e5f5;">历史某刻股价(元)</th>
+                        
+                        <th onclick="sortTable('now_mv')" style="color:#b71c1c; background:#fffde7;">最新市值(亿)</th>
+                        <th onclick="sortTable('total_mv')" style="color:#4a148c; background:#f3e5f5;">历史某刻市值(亿)</th>
+                        
+                        <th onclick="sortTable('now_turnover')" style="color:#b71c1c; background:#fffde7;">最新换手(%)</th>
+                        <th onclick="sortTable('turnover_ratio')" style="color:#4a148c; background:#f3e5f5;">历史某刻换手(%)</th>
+                        
+                        <th onclick="sortTable('now_pe')" style="color:#b71c1c; background:#fffde7;">最新PE</th>
+                        <th onclick="sortTable('pe')" style="color:#4a148c; background:#f3e5f5;">历史某刻PE</th>
+                        
+                        <th onclick="sortTable('now_pb')" style="color:#b71c1c; background:#fffde7;">最新PB</th>
+                        <th onclick="sortTable('pb')" style="color:#4a148c; background:#f3e5f5;">历史某刻PB</th>
+                        
                         <th onclick="sortTable('roe')">ROE(%)</th>
                         <th onclick="sortTable('roa')">ROA(%)</th>
                         <th onclick="sortTable('revenue_growth')">营收增速(%)</th>
@@ -159,8 +151,6 @@
                         <th onclick="sortTable('gross_margin')">毛利率(%)</th>
                         <th onclick="sortTable('net_margin')">净利率(%)</th>
                         <th onclick="sortTable('debt_asset_ratio')">资产负债率(%)</th>
-                        <th onclick="sortTable('current_ratio')">流动比</th>
-                        <th onclick="sortTable('quick_ratio')">速动比</th>
                         <th onclick="sortTable('bps')">每股净资产</th>
                         <th onclick="sortTable('cfps')">每股现金流</th>
                     </tr>
@@ -173,7 +163,7 @@
     <script {nonce}>
         let allFinancialData = [];
         let currentSortField = '';
-        let currentSortOrder = 'asc';
+        let currentSortOrder = 'desc';
 
         function startAppleClock() {
             setInterval(() => {
@@ -196,7 +186,7 @@
                 const response = await fetch('data.json?cb=' + new Date().getTime());
                 if (!response.ok) throw new Error();
                 allFinancialData = await response.json();
-                document.getElementById('dataStatus').innerText = `✨ 成功载入云端真数矩阵！共捕获原始历史大样本记录 ${allFinancialData.length} 条。`;
+                document.getElementById('dataStatus').innerText = `✨ 多源真数矩阵交叉验证通过！共计入大样本数据记录 ${allFinancialData.length} 条。`;
             } catch (error) {
                 document.getElementById('dataStatus').innerText = "⚠️ 未读取到云端有效数据文件";
             }
@@ -220,7 +210,7 @@
             const selectedYear = parseInt(document.getElementById('yearSelect').value);
             const searchKeyword = document.getElementById('stockSearchInput').value.trim().toLowerCase();
 
-            // 🧠 严格只锁定当前选择年份的截面真数
+            // 锁定所选历史年份的截面数据
             let baseData = allFinancialData.filter(item => intVal(item.year) === selectedYear);
 
             if (searchKeyword) {
@@ -233,7 +223,7 @@
             }
 
             if (baseData.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="23" style="text-align:center; color:#86868b; padding:50px;">🔍 暂无符合当前年份和筛选条件的股票记录</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="24" style="text-align:center; color:#86868b; padding:50px;">🔍 暂无符合筛选条件的股票记录</td></tr>`;
                 return;
             }
 
@@ -250,9 +240,9 @@
             }
 
             const numericFields = [
-                'history_price', 'now_price', 'total_mv', 'turnover_ratio', 'pe', 'pb', 'dv_ratio', 'roe', 'roa', 
-                'revenue_growth', 'profit_growth', 'gross_margin', 'net_margin', 
-                'debt_asset_ratio', 'current_ratio', 'quick_ratio', 'bps', 'cfps'
+                'now_price', 'history_price', 'now_mv', 'total_mv', 'now_turnover', 'turnover_ratio',
+                'now_pe', 'pe', 'now_pb', 'pb', 'roe', 'roa', 'revenue_growth', 'profit_growth',
+                'gross_margin', 'net_margin', 'debt_asset_ratio', 'bps', 'cfps'
             ];
             
             let baseSums = {};
@@ -265,18 +255,27 @@
                 if (stock.board === "科创板") boardBadge = `<span class="badge badge-kc">科创板</span>`;
 
                 row.innerHTML = `
-                    <td style="color:#0071e3; font-weight:600; background:#fbfdff;">${stock.report_type || '-'}</td>
+                    <td style="color:#0071e3; font-weight:600;">${stock.report_type || '-'}</td>
                     <td style="font-family: monospace;">${stock.ts_code || '-'}</td>
                     <td><strong>${stock.name || '-'}</strong></td>
                     <td style="color:#555;">${stock.industry || '-'}</td>
                     <td>${boardBadge}</td>
-                    <td style="font-weight:600;">${formatNum(stock.history_price)}</td>
-                    <td style="font-weight:600; color:#e65100;">${formatNum(stock.now_price)}</td>
-                    <td>${formatNum(stock.total_mv)}</td>
-                    <td>${formatNum(stock.turnover_ratio)}</td>
-                    <td>${formatNum(stock.pe)}</td>
-                    <td>${formatNum(stock.pb)}</td>
-                    <td>${formatNum(stock.dv_ratio)}</td>
+                    
+                    <td class="col-now">${formatNum(stock.now_price)}</td>
+                    <td class="col-hist">${formatNum(stock.history_price)}</td>
+                    
+                    <td class="col-now">${formatNum(stock.now_mv)}</td>
+                    <td class="col-hist">${formatNum(stock.total_mv)}</td>
+                    
+                    <td class="col-now">${formatNum(stock.now_turnover)}</td>
+                    <td class="col-hist">${formatNum(stock.turnover_ratio)}</td>
+                    
+                    <td class="col-now">${formatNum(stock.now_pe)}</td>
+                    <td class="col-hist">${formatNum(stock.pe)}</td>
+                    
+                    <td class="col-now">${formatNum(stock.now_pb)}</td>
+                    <td class="col-hist">${formatNum(stock.pb)}</td>
+                    
                     <td>${formatNum(stock.roe)}</td>
                     <td>${formatNum(stock.roa)}</td>
                     <td>${formatNum(stock.revenue_growth)}</td>
@@ -284,8 +283,6 @@
                     <td>${formatNum(stock.gross_margin)}</td>
                     <td>${formatNum(stock.net_margin)}</td>
                     <td>${formatNum(stock.debt_asset_ratio)}</td>
-                    <td>${formatNum(stock.current_ratio)}</td>
-                    <td>${formatNum(stock.quick_ratio)}</td>
                     <td>${formatNum(stock.bps)}</td>
                     <td>${formatNum(stock.cfps)}</td>
                 `;
@@ -296,22 +293,20 @@
 
             const baseLen = baseData.length;
 
-            // 👑 干净的纯年度横截面平均值行
             let avgRow = document.createElement('tr');
             avgRow.className = "avg-row";
             avgRow.innerHTML = `
-                <td style="background:#f4fbfc !important;">-</td>
-                <td>-</td>
-                <td>📊 所选时刻横截面均值</td>
-                <td>-</td>
-                <td>-</td>
-                <td>${formatNum(baseSums['history_price'] / baseLen)}</td>
-                <td>${formatNum(baseSums['now_price'] / baseLen)}</td>
-                <td>${formatNum(baseSums['total_mv'] / baseLen)}</td>
-                <td>${formatNum(baseSums['turnover_ratio'] / baseLen)}</td>
-                <td>${formatNum(baseSums['pe'] / baseLen)}</td>
-                <td>${formatNum(baseSums['pb'] / baseLen)}</td>
-                <td>${formatNum(baseSums['dv_ratio'] / baseLen)}</td>
+                <td>-</td><td>-</td><td>📊 截面加权平均值</td><td>-</td><td>-</td>
+                <td class="col-now">${formatNum(baseSums['now_price'] / baseLen)}</td>
+                <td class="col-hist">${formatNum(baseSums['history_price'] / baseLen)}</td>
+                <td class="col-now">${formatNum(baseSums['now_mv'] / baseLen)}</td>
+                <td class="col-hist">${formatNum(baseSums['total_mv'] / baseLen)}</td>
+                <td class="col-now">${formatNum(baseSums['now_turnover'] / baseLen)}</td>
+                <td class="col-hist">${formatNum(baseSums['turnover_ratio'] / baseLen)}</td>
+                <td class="col-now">${formatNum(baseSums['now_pe'] / baseLen)}</td>
+                <td class="col-hist">${formatNum(baseSums['pe'] / baseLen)}</td>
+                <td class="col-now">${formatNum(baseSums['now_pb'] / baseLen)}</td>
+                <td class="col-hist">${formatNum(baseSums['pb'] / baseLen)}</td>
                 <td>${formatNum(baseSums['roe'] / baseLen)}</td>
                 <td>${formatNum(baseSums['roa'] / baseLen)}</td>
                 <td>${formatNum(baseSums['revenue_growth'] / baseLen)}</td>
@@ -319,14 +314,12 @@
                 <td>${formatNum(baseSums['gross_margin'] / baseLen)}</td>
                 <td>${formatNum(baseSums['net_margin'] / baseLen)}</td>
                 <td>${formatNum(baseSums['debt_asset_ratio'] / baseLen)}</td>
-                <td>${formatNum(baseSums['current_ratio'] / baseLen)}</td>
-                <td>${formatNum(baseSums['quick_ratio'] / baseLen)}</td>
                 <td>${formatNum(baseSums['bps'] / baseLen)}</td>
                 <td>${formatNum(baseSums['cfps'] / baseLen)}</td>
             `;
             tbody.appendChild(avgRow);
 
-            document.getElementById('dataStatus').innerText = `✨ 截面运算成功：当前时刻共计有效筛选样本 ${baseLen} 组。`;
+            document.getElementById('dataStatus').innerText = `✨ 2026年最新交易日与历史双轴比对引擎激活 | 共有有效标的截面 ${baseLen} 组。`;
         }
 
         function formatNum(val) { return (val === undefined || val === null || isNaN(val) || val === '') ? '-' : parseFloat(val).toFixed(2); }
