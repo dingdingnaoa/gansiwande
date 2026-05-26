@@ -5,15 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>A股多维指标全景看板 - aiinvest.art</title>
     <style>
-        /* 🍏 苹果美学全局规范定义 */
+        /* 🍏 苹果顶级美学视觉规范 */
         :root {
-            --apple-bg: #fafafa;
+            --apple-bg: #f5f5f7;
             --apple-card: #ffffff;
             --apple-text-main: #1d1d1f;
             --apple-text-secondary: #86868b;
             --apple-primary: #0071e3;
+            --apple-primary-hover: #0077ed;
             --apple-gray-border: #d2d2d7;
-            --apple-radius: 12px;
+            --apple-radius: 14px;
         }
 
         body {
@@ -26,24 +27,23 @@
         }
 
         .container {
-            max-width: 1400px;
+            max-width: 1440px;
             margin: 0 auto;
         }
 
-        /* 🍏 顶部精致的科技仪表盘与双时钟 */
         header {
             display: flex;
             justify-content: space-between;
             align-items: flex-end;
-            margin-bottom: 30px;
+            margin-bottom: 35px;
             padding: 0 8px;
         }
 
         h2 {
-            font-size: 28px;
+            font-size: 30px;
             font-weight: 600;
-            letter-spacing: -0.5px;
-            margin: 0 0 8px 0;
+            letter-spacing: -0.8px;
+            margin: 0 0 6px 0;
         }
 
         .time-monitor {
@@ -55,88 +55,110 @@
 
         .time-live {
             font-family: "SF Mono", Menlo, Consolas, monospace;
-            font-weight: 500;
+            font-weight: 600;
             color: var(--apple-text-main);
             font-size: 14px;
         }
 
-        /* 🍏 极致内敛的卡片容器 */
         .card {
             background: var(--apple-card);
             border-radius: var(--apple-radius);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
-            border: 1px solid rgba(0, 0, 0, 0.02);
-            padding: 24px;
-            margin-bottom: 25px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.02);
+            border: 1px solid rgba(0, 0, 0, 0.01);
+            padding: 28px;
+            margin-bottom: 30px;
+        }
+
+        .control-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 18px;
+            border-bottom: 1px solid #f5f5f7;
+            padding-bottom: 14px;
         }
 
         .control-title {
-            font-size: 15px;
+            font-size: 16px;
             font-weight: 600;
-            color: var(--apple-text-main);
-            margin-bottom: 16px;
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 8px;
         }
 
-        /* 🍏 极简年份矩阵按钮 */
         .year-matrix {
             display: flex;
             flex-wrap: wrap;
-            gap: 8px;
-            margin-top: 14px;
+            gap: 10px;
+            margin-top: 16px;
         }
 
         .year-item {
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 8px;
             background: #f5f5f7;
-            padding: 8px 14px;
-            border-radius: 8px;
+            padding: 10px 16px;
+            border-radius: 10px;
             cursor: pointer;
             font-size: 13px;
             font-weight: 500;
-            transition: all 0.2s ease;
+            transition: all 0.2s cubic-bezier(0.25, 0.1, 0.25, 1);
             user-select: none;
-            border: 1px solid transparent;
         }
 
         .year-item:hover {
             background: #e8e8ed;
+            transform: translateY(-1px);
         }
 
         .year-item input {
             margin: 0;
             accent-color: var(--apple-text-main);
-            cursor: pointer;
+            transform: scale(1.1);
         }
 
-        /* 🍏 精致纽扣微质感按钮 */
-        .btn-group button {
+        .btn-group {
+            display: flex;
+            gap: 8px;
+        }
+
+        button {
             background: #ffffff;
             border: 1px solid var(--apple-gray-border);
             color: var(--apple-text-main);
-            padding: 6px 12px;
-            border-radius: 6px;
+            padding: 8px 16px;
+            border-radius: 8px;
             cursor: pointer;
-            font-size: 12px;
+            font-size: 13px;
             font-weight: 500;
-            transition: all 0.2s ease;
+            transition: all 0.15s ease;
         }
 
-        .btn-group button:hover {
+        button:hover {
             background: #f5f5f7;
             border-color: var(--apple-text-main);
         }
 
-        /* 🍏 现代无边框视网膜表格 */
+        button.btn-primary {
+            background: var(--apple-primary);
+            border-color: var(--apple-primary);
+            color: #ffffff;
+        }
+
+        button.btn-primary:hover {
+            background: var(--apple-primary-hover);
+            border-color: var(--apple-primary-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 113, 227, 0.2);
+        }
+
         .table-responsive {
             overflow-x: auto;
             border-radius: var(--apple-radius);
             border: 1px solid #e5e5ea;
             background: #ffffff;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.02);
         }
 
         table {
@@ -149,18 +171,18 @@
             background-color: #f5f5f7;
             color: var(--apple-text-main);
             font-weight: 600;
-            font-size: 12px;
-            padding: 14px 16px;
+            font-size: 13px;
+            padding: 16px;
             border-bottom: 1px solid #e5e5ea;
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
+            white-space: nowrap;
         }
 
         td {
-            padding: 14px 16px;
+            padding: 16px;
             border-bottom: 1px solid #f5f5f7;
-            font-size: 13px;
+            font-size: 13.5px;
             color: #333336;
+            white-space: nowrap;
         }
 
         tr:last-child td {
@@ -171,19 +193,19 @@
             background-color: #f5f5f7;
         }
 
-        /* 🍏 跨年平均值专属轻盈亮色高亮 */
         .avg-row td {
             background-color: #f4fbfc !important;
             font-weight: 600;
             color: var(--apple-primary);
+            border-top: 2px solid rgba(0, 113, 227, 0.1);
         }
 
         .counter {
-            margin-top: 16px;
-            font-size: 12px;
+            margin-top: 20px;
+            font-size: 13px;
             color: var(--apple-text-secondary);
             border-top: 1px dashed #e5e5ea;
-            padding-top: 12px;
+            padding-top: 14px;
         }
     </style>
 </head>
@@ -193,24 +215,25 @@
         <header>
             <div>
                 <h2>A股多维指标全景看板</h2>
-                <div style="font-size: 14px; color: var(--apple-text-secondary);">Automated Financial Quantitative Analytics Dashboard</div>
+                <div style="font-size: 14px; color: var(--apple-text-secondary); margin-top: 2px;">Automated Financial Quantitative Analytics Dashboard</div>
             </div>
             <div class="time-monitor">
                 <div>当前系统时间：<span id="liveClock" class="time-live">00:00:00</span></div>
-                <div>内核最后编译：<span id="lastModified" style="font-weight:500;">加载中...</span></div>
+                <div>内核最后编译：<span id="lastModified" style="font-weight:500;">-</span></div>
             </div>
         </header>
 
         <div class="card">
-            <div class="control-title">
-                <span>维度聚合分析引擎</span>
-            </div>
-            <div class="btn-group">
-                <button onclick="checkAll(true)">全选所有年份</button>
-                <button onclick="checkAll(false)">清空选择</button>
+            <div class="control-header">
+                <div class="control-title">维度分析矩阵控制台</div>
+                <div class="btn-group">
+                    <button onclick="checkAll(true)">全选所有年份</button>
+                    <button onclick="checkAll(false)">清空选择</button>
+                    <button class="btn-primary" onclick="manualRefresh()">🔄 强行粉碎缓存同步</button>
+                </div>
             </div>
             <div class="year-matrix" id="yearMatrixContainer"></div>
-            <div class="counter" id="dataStatus">正在读取 A股 10年多维数据矩阵...</div>
+            <div class="counter" id="dataStatus">数据加载中...</div>
         </div>
 
         <div class="table-responsive">
@@ -247,21 +270,17 @@
         let allFinancialData = [];
         const targetYears = ["2026", "2025", "2024", "2023", "2022", "2021", "2020", "2019", "2018", "2017", "2016"];
 
-        // 🕰️ 时钟驱动引擎
         function startAppleClock() {
-            // 1. 实时时钟
             setInterval(() => {
                 const now = new Date();
                 document.getElementById('liveClock').innerText = now.toTimeString().split(' ')[0];
             }, 1000);
 
-            // 2. 捕获网页最后的修改编译时间
             const modifyDate = new Date(document.lastModified);
-            const formattedDate = modifyDate.getFullYear() + '-' + 
+            document.getElementById('lastModified').innerText = modifyDate.getFullYear() + '-' + 
                                   String(modifyDate.getMonth() + 1).padStart(2, '0') + '-' + 
                                   String(modifyDate.getDate()).padStart(2, '0') + ' ' + 
                                   modifyDate.toTimeString().split(' ')[0];
-            document.getElementById('lastModified').innerText = formattedDate;
         }
 
         function initYearMatrix() {
@@ -270,7 +289,7 @@
             targetYears.forEach(year => {
                 const label = document.createElement('label');
                 label.className = "year-item";
-                // 默认勾选 2025 和 2024 以防 2026 暂时为空时页面空洞
+                // 默认勾选 2025 和 2024
                 const checked = (year === "2025" || year === "2024") ? "checked" : "";
                 label.innerHTML = `<input type="checkbox" value="${year}" ${checked} onchange="calculateAndRender()"> ${year}年`;
                 container.appendChild(label);
@@ -283,16 +302,21 @@
             calculateAndRender();
         }
 
+        async function manualRefresh() {
+            document.getElementById('dataStatus').innerText = "⏳ 正在穿透云端节点物理防御...";
+            await loadData();
+        }
+
         async function loadData() {
-            startAppleClock();
-            initYearMatrix();
             try {
-                const response = await fetch('data.json');
+                // 🧠 核心破障锁：利用当前绝对时间戳（如 ?cb=1716...），彻底粉碎浏览器和云端 CDN 的缓存死锁
+                const cacheBuster = 'data.json?cb=' + new Date().getTime();
+                const response = await fetch(cacheBuster);
                 if (!response.ok) throw new Error();
                 allFinancialData = await response.json();
-                document.getElementById('dataStatus').innerText = `✨ 成功加载云端真实矩阵！共计录入跨年数据 ${allFinancialData.length} 条。`;
+                document.getElementById('dataStatus').innerText = `✨ 成功从云端剥离高保真矩阵！共捕获原始数据记录 ${allFinancialData.length} 条。`;
             } catch (error) {
-                console.warn("未读取到云端真数，正在本地组装全量10年多维测试数据矩阵...");
+                console.warn("未发现有效真数，切换本地备用大样本多维矩阵层...");
                 generateRobustMockData();
             }
             calculateAndRender();
@@ -306,15 +330,19 @@
             const checkedYears = Array.from(selectedBoxes).map(cb => cb.value);
 
             if (checkedYears.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="19" style="text-align:center; color:#999; padding:40px;">💡 请在上方自由勾选一个或多个年份，系统将自动进行多维均值计算</td></tr>`;
-                document.getElementById('dataStatus').innerText = "提示：请选择需要分析的量化周期";
+                tbody.innerHTML = `<tr><td colspan="19" style="text-align:center; color:#86868b; padding:50px;">💡 请在上方勾选任意年份，系统将实时响应并聚合多维均值矩阵</td></tr>`;
+                document.getElementById('dataStatus').innerText = "提示：请选择量化观察周期";
                 return;
             }
 
-            const filteredData = allFinancialData.filter(item => checkedYears.includes(String(item.year)));
+            const filteredData = allFinancialData.filter(item => {
+                if (!item.year) return false;
+                const itemYearStr = String(item.year);
+                return checkedYears.some(cy => itemYearStr.includes(cy));
+            });
 
             if (filteredData.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="19" style="text-align:center; color:#999; padding:40px;">暂无所选年份的数据记录</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="19" style="text-align:center; color:#86868b; padding:50px;">🔍 模糊匹配中：在当前云端下发的 ${checkedYears.join('/')} 年度真数中未拆分出有效字段，可尝试点击刷新。</td></tr>`;
                 return;
             }
 
@@ -348,7 +376,7 @@
                     <td>${formatNum(stock.quick_ratio)}</td>
                     <td>${formatNum(stock.bps)}</td>
                     <td>${formatNum(stock.cfps)}</td>
-                    <td style="color:var(--apple-text-secondary); font-weight:500;">${stock.year}年</td>
+                    <td style="color:var(--apple-text-secondary); font-weight:600;">${stock.year}年</td>
                 `;
                 tbody.appendChild(row);
 
@@ -380,11 +408,11 @@
                 <td>${formatNum(sums['quick_ratio'] / totalCount)}</td>
                 <td>${formatNum(sums['bps'] / totalCount)}</td>
                 <td>${formatNum(sums['cfps'] / totalCount)}</td>
-                <td style="font-size:12px; font-weight:bold;">${checkedYears.length}个年度聚合</td>
+                <td style="font-size:12px; font-weight:bold;">聚合 ${totalCount} 组样本</td>
             `;
             tbody.appendChild(avgRow);
 
-            document.getElementById('dataStatus').innerText = `✨ 聚合分析中：当前选定周期 [${checkedYears.join(', ')}] | 深度覆盖 A股 ${totalCount} 组多维样本`;
+            document.getElementById('dataStatus').innerText = `✨ 聚合分析中：当前激活周期 [${checkedYears.join(', ')}] | 深度穿透全量 A股 ${totalCount} 跨年指标模型`;
         }
 
         function formatNum(val) {
@@ -392,29 +420,10 @@
             return parseFloat(val).toFixed(2);
         }
 
-        function generateRobustMockData() {
-            const baseStocks = [
-                { code: "000001.SZ", name: "平安银行" }, { code: "600036.SH", name: "招商银行" },
-                { code: "600519.SH", name: "贵州茅台" }, { code: "002594.SZ", name: "比亚迪" },
-                { code: "600900.SH", name: "长江电力" }, { code: "000333.SZ", name: "美的集团" }
-            ];
-            targetYears.forEach(y => {
-                baseStocks.forEach(s => {
-                    allFinancialData.push({
-                        ts_code: s.code, name: s.name, year: y,
-                        total_mv: Math.random() * 6000 + 400, turnover_ratio: Math.random() * 6 + 0.3,
-                        pe: Math.random() * 25 + 5, pb: Math.random() * 4 + 0.9, dv_ratio: Math.random() * 5,
-                        roe: Math.random() * 18 + 4, roa: Math.random() * 10 + 1,
-                        revenue_growth: Math.random() * 35 - 5, profit_growth: Math.random() * 45 - 10,
-                        gross_margin: Math.random() * 60 + 20, net_margin: Math.random() * 25 + 4,
-                        debt_asset_ratio: Math.random() * 50 + 25, current_ratio: Math.random() * 2 + 0.5,
-                        quick_ratio: Math.random() * 1.5 + 0.3, bps: Math.random() * 15 + 4, cfps: Math.random() * 5 - 1
-                    });
-                });
-            });
-        }
-
-        window.onload = loadData;
+        window.onload = () => {
+            startAppleClock();
+            loadData();
+        };
     </script>
 </body>
 </html>
