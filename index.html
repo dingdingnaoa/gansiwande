@@ -33,6 +33,31 @@
         .card { background: var(--apple-card); border-radius: var(--apple-radius); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.02); border: 1px solid rgba(0, 0, 0, 0.01); padding: 28px; margin-bottom: 30px; }
         .control-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; border-bottom: 1px solid #f5f5f7; padding-bottom: 14px; }
         .control-title { font-size: 16px; font-weight: 600; }
+        
+        /* 🔍 搜索组件苹果风样式 */
+        .search-box-container {
+            margin-top: 16px;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+        .apple-input {
+            width: 320px;
+            padding: 10px 16px;
+            font-size: 13.5px;
+            border-radius: 8px;
+            border: 1px solid var(--apple-gray-border);
+            background: #f5f5f7;
+            color: var(--apple-text-main);
+            transition: all 0.2s ease;
+        }
+        .apple-input:focus {
+            outline: none;
+            background: #ffffff;
+            border-color: var(--apple-primary);
+            box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.15);
+        }
+
         .year-matrix { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
         .year-item { display: flex; align-items: center; gap: 8px; background: #f5f5f7; padding: 10px 16px; border-radius: 10px; cursor: pointer; font-size: 13px; font-weight: 500; transition: all 0.2s ease; user-select: none; }
         .year-item:hover { background: #e8e8ed; transform: translateY(-1px); }
@@ -47,6 +72,17 @@
         td { padding: 16px; border-bottom: 1px solid #f5f5f7; font-size: 13.5px; color: #333336; white-space: nowrap; }
         .avg-row td { background-color: #f4fbfc !important; font-weight: 600; color: var(--apple-primary); }
         .counter { margin-top: 20px; font-size: 13px; color: var(--apple-text-secondary); border-top: 1px dashed #e5e5ea; padding-top: 14px; }
+        
+        /* 🏷️ 板块微章样式 */
+        .badge {
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .badge-main { background: #e1f5fe; color: #0288d1; }
+        .badge-cy { background: #e8f5e9; color: #388e3c; }
+        .badge-kc { background: #fff3e0; color: #f57c00; }
     </style>
 </head>
 <body>
@@ -73,6 +109,13 @@
                 </div>
             </div>
             <div class="year-matrix" id="yearMatrixContainer"></div>
+            
+            <div class="search-box-container">
+                <span style="font-size:13px; font-weight:500; color:var(--apple-text-secondary);">列表实时筛选：</span>
+                <input type="text" id="stockSearchInput" class="apple-input" placeholder="输入股票名称 / 代码 / 行业 / 板块..." oninput="calculateAndRender()">
+                <span style="font-size:12px; color:var(--apple-text-secondary);">💡 支持搜“科创板”、“银行”、“茅台”等关键字快速锁数</span>
+            </div>
+
             <div class="counter" id="dataStatus">数据加载中...</div>
         </div>
 
@@ -80,9 +123,11 @@
             <table id="metricsTable">
                 <thead>
                     <tr>
+                        <th style="color:var(--apple-primary); background:#eef7ff;">精准报告期</th>
                         <th>股票代码</th>
                         <th>股票名称</th>
-                        <th style="color:var(--apple-primary);">当前股价 (元)</th> <th>总市值 (亿)</th>
+                        <th style="color:var(--apple-primary);">所属行业</th> <th style="color:var(--apple-primary);">分类板块</th> <th>当前股价 (元)</th>
+                        <th>总市值 (亿)</th>
                         <th>换手率 (%)</th>
                         <th>市盈率 (PE)</th>
                         <th>市净率 (PB)</th>
@@ -98,7 +143,7 @@
                         <th>速动比</th>
                         <th>每股净资产</th>
                         <th>每股现金流</th>
-                        <th style="color:var(--apple-primary);">精准报告期</th> </tr>
+                    </tr>
                 </thead>
                 <tbody id="tableBody"></tbody>
             </table>
@@ -164,23 +209,37 @@
 
             const selectedBoxes = document.querySelectorAll('#yearMatrixContainer input[type="checkbox"]:checked');
             const checkedYears = Array.from(selectedBoxes).map(cb => cb.value);
+            
+            // 获取搜索关键字
+            const searchKeyword = document.getElementById('stockSearchInput').value.trim().toLowerCase();
 
             if (checkedYears.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="20" style="text-align:center; color:#86868b; padding:50px;">💡 请在上方勾选任意年份，系统将实时响应并聚合多维均值矩阵</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="22" style="text-align:center; color:#86868b; padding:50px;">💡 请在上方勾选任意年份，系统将实时响应并聚合多维均值矩阵</td></tr>`;
                 return;
             }
 
-            const filteredData = allFinancialData.filter(item => {
+            // 🧠 第一层过滤：年份时间轴过滤
+            let filteredData = allFinancialData.filter(item => {
                 if (!item.year) return false;
                 return checkedYears.some(cy => String(item.year).includes(cy));
             });
 
+            // 🧠 第二层过滤：关键字模糊搜索筛选（支持代码、名称、行业、板块）
+            if (searchKeyword) {
+                filteredData = filteredData.filter(item => {
+                    const codeMatch = (item.ts_code || '').toLowerCase().includes(searchKeyword);
+                    const nameMatch = (item.name || '').toLowerCase().includes(searchKeyword);
+                    const indMatch = (item.industry || '').toLowerCase().includes(searchKeyword);
+                    const boardMatch = (item.board || '').toLowerCase().includes(searchKeyword);
+                    return codeMatch || nameMatch || indMatch || boardMatch;
+                });
+            }
+
             if (filteredData.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="20" style="text-align:center; color:#86868b; padding:50px;">🔍 暂无所选年份的数据记录</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="22" style="text-align:center; color:#86868b; padding:50px;">🔍 暂无符合当前年份和筛选条件的股票记录</td></tr>`;
                 return;
             }
 
-            // 🧠 将 price（股价）也纳入累加计算池
             const numericFields = [
                 'price', 'total_mv', 'turnover_ratio', 'pe', 'pb', 'dv_ratio', 'roe', 'roa', 
                 'revenue_growth', 'profit_growth', 'gross_margin', 'net_margin', 
@@ -192,9 +251,17 @@
 
             filteredData.forEach(stock => {
                 let row = document.createElement('tr');
+                
+                // 根据不同板块进行精美徽章组装
+                let boardBadge = `<span class="badge badge-main">主板</span>`;
+                if (stock.board === "创业板") boardBadge = `<span class="badge badge-cy">创业板</span>`;
+                if (stock.board === "科创板") boardBadge = `<span class="badge badge-kc">科创板</span>`;
+
                 row.innerHTML = `
-                    <td style="font-family: monospace; font-weight:500;">${stock.ts_code || '-'}</td>
-                    <td><strong>${stock.name || '-'}</strong></td> <td style="font-weight:600; color:#1d1d1f;">${formatNum(stock.price)}</td> <td>${formatNum(stock.total_mv)}</td>
+                    <td style="color:#0071e3; font-weight:600; background:#fbfdff;">${stock.report_type || '-'}</td> <td style="font-family: monospace; font-weight:500;">${stock.ts_code || '-'}</td>
+                    <td><strong>${stock.name || '-'}</strong></td>
+                    <td style="color:#555; font-weight:500;">${stock.industry || '-'}</td> <td>${boardBadge}</td> <td style="font-weight:600;">${formatNum(stock.price)}</td>
+                    <td>${formatNum(stock.total_mv)}</td>
                     <td>${formatNum(stock.turnover_ratio)}</td>
                     <td>${formatNum(stock.pe)}</td>
                     <td>${formatNum(stock.pb)}</td>
@@ -210,7 +277,7 @@
                     <td>${formatNum(stock.quick_ratio)}</td>
                     <td>${formatNum(stock.bps)}</td>
                     <td>${formatNum(stock.cfps)}</td>
-                    <td style="color:var(--apple-text-secondary); font-weight:600;">${stock.report_type || '-'}</td> `;
+                `;
                 tbody.appendChild(row);
 
                 numericFields.forEach(field => {
@@ -223,9 +290,13 @@
             avgRow.className = "avg-row";
             
             avgRow.innerHTML = `
+                <td style="background:#f4fbfc !important;">-</td>
                 <td>-</td>
-                <td>📊 所选周期综合均值</td>
-                <td>${formatNum(sums['price'] / totalCount)}</td> <td>${formatNum(sums['total_mv'] / totalCount)}</td>
+                <td>📊 筛选样本综合均值</td>
+                <td>-</td>
+                <td>-</td>
+                <td>${formatNum(sums['price'] / totalCount)}</td>
+                <td>${formatNum(sums['total_mv'] / totalCount)}</td>
                 <td>${formatNum(sums['turnover_ratio'] / totalCount)}</td>
                 <td>${formatNum(sums['pe'] / totalCount)}</td>
                 <td>${formatNum(sums['pb'] / totalCount)}</td>
@@ -241,11 +312,10 @@
                 <td>${formatNum(sums['quick_ratio'] / totalCount)}</td>
                 <td>${formatNum(sums['bps'] / totalCount)}</td>
                 <td>${formatNum(sums['cfps'] / totalCount)}</td>
-                <td style="font-size:12px; font-weight:bold;">聚合 ${totalCount} 组样本</td>
             `;
             tbody.appendChild(avgRow);
 
-            document.getElementById('dataStatus').innerText = `✨ 聚合分析中：当前激活周期 [${checkedYears.join(', ')}] | 深度穿透全量 A股 ${totalCount} 跨年指标模型`;
+            document.getElementById('dataStatus').innerText = `✨ 动态筛选联动中：当前命中符合条件样本 ${totalCount} 组 | 均值矩阵已自动根据筛选结果实时重算。`;
         }
 
         function formatNum(val) {
