@@ -1,0 +1,39 @@
+name: Scheduled Automated Quant Pipeline
+
+on:
+  schedule:
+    - cron: '30 9 * * 1-5' # 每周一至周五 UTC 09:30 (北京时间 17:30 A股收盘后清算期)
+  workflow_dispatch:      # 允许手动随时单点触发执行
+
+jobs:
+  run-quant-pipeline:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository Core
+      uses: actions/checkout@v3
+
+    - name: Set up Python Engine
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+
+    - name: Install Quant Framework Dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pandas tushare
+
+    - name: Execute True Market Data Matrix Pipeline
+      env:
+        TUSHARE_TOKEN: ${{ secrets.TUSHARE_TOKEN }} # 完美关联加密 Token
+      run: |
+        python main.py
+
+    - name: Auto Git Commit and Premium VIP Push
+      run: |
+        git config --global user.name "QuantBot"
+        git config --global user.email "bot@aiinvest.art"
+        git add .
+        git diff-index --quiet HEAD || git commit -m "Automated Pipeline: Sync official historical macro data matrix [Skip CI]"
+        git push origin main -f
