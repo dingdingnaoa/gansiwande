@@ -22,8 +22,8 @@
             padding: 40px 20px;
             -webkit-font-smoothing: antialiased;
         }
-        .container { max-width: 1440px; margin: 0 auto; }
-        header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 35px; padding: 0 8px; position: relative; }
+        .container { max-width: 1440px; margin: 0 auto; position: relative; }
+        header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 35px; padding: 0 8px; }
         h2 { font-size: 30px; font-weight: 600; letter-spacing: -0.8px; margin: 0; }
         .time-monitor { text-align: right; font-size: 13px; color: var(--apple-text-secondary); }
         .time-live { font-family: monospace; font-weight: 600; color: var(--apple-text-main); font-size: 14px; }
@@ -55,128 +55,111 @@
         .badge-kc { background: #fff3e0; color: #f57c00; }
 
         /* ==========================================
-           🍏 纯 CSS 拟物风治愈小猫核心动效样式架
+           🎨 3D 拟物化艺术猫咪独立悬浮舱组件 
            ========================================== */
-        .cat-container {
-            position: absolute;
-            left: 320px;
-            bottom: -5px;
-            width: 70px;
-            height: 60px;
+        .art-cat-anchor {
+            position: fixed;
+            right: 40px;
+            bottom: 40px;
+            width: 140px;
+            height: 140px;
+            z-index: 999;
             cursor: pointer;
             user-select: none;
-            z-index: 50;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
         }
-        .cat-bubble {
+        /* 磨砂玻璃艺术基座 */
+        .art-cat-pod {
             position: absolute;
-            top: -45px;
-            left: 50%;
-            transform: translateX(-50%) scale(0);
-            background: #1d1d1f;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0.2));
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 50%;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            box-shadow: 0 12px 36px rgba(0, 0, 0, 0.08), inset 0 2px 4px rgba(255,255,255,0.4);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            animation: cat-float 4s infinite ease-in-out;
+            overflow: visible;
+        }
+        /* 3D 高精英短猫咪主体 */
+        .art-cat-avatar {
+            width: 125px;
+            height: 125px;
+            background: url('https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?auto=format&fit=crop&q=80&w=300') center/cover no-repeat;
+            border-radius: 50%;
+            filter: drop-shadow(0 8px 16px rgba(0,0,0,0.15)) contrast(1.05);
+            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 2px solid #ffffff;
+        }
+        /* 拟物倒影衬垫 */
+        .art-cat-shadow {
+            position: absolute;
+            bottom: -15px;
+            left: 10%;
+            width: 80%;
+            height: 12px;
+            background: rgba(0, 0, 0, 0.04);
+            filter: blur(6px);
+            border-radius: 50%;
+            animation: shadow-pulse 4s infinite ease-in-out;
+            z-index: -1;
+        }
+        /* 赛博量化猫语对话泡 */
+        .art-cat-bubble {
+            position: absolute;
+            bottom: 155px;
+            right: 10px;
+            background: rgba(29, 29, 31, 0.9);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
             color: #ffffff;
-            padding: 6px 12px;
-            border-radius: 10px;
-            font-size: 11px;
+            padding: 12px 18px;
+            border-radius: 16px;
+            font-size: 12.5px;
+            line-height: 1.5;
             font-weight: 500;
             white-space: nowrap;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transform: scale(0);
+            transform-origin: bottom right;
             opacity: 0;
+            transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             pointer-events: none;
         }
-        .cat-bubble::after {
+        .art-cat-bubble::after {
             content: '';
             position: absolute;
-            bottom: -5px;
-            left: 50%;
-            transform: translateX(-50%);
-            border-width: 5px 5px 0;
+            bottom: -6px;
+            right: 60px;
+            border-width: 6px 6px 0;
             border-style: solid;
-            border-color: #1d1d1f transparent;
+            border-color: rgba(29, 29, 31, 0.9) transparent;
             display: block;
             width: 0;
         }
-        .cat-bubble.show {
-            transform: translateX(-50%) scale(1);
+        .art-cat-bubble.show {
+            transform: scale(1);
             opacity: 1;
         }
-        .cat-body {
-            position: absolute;
-            bottom: 0;
-            width: 55px;
-            height: 35px;
-            background: #3a3a3c;
-            border-radius: 20px 20px 10px 10px;
-            animation: cat-breathe 2.5s infinite ease-in-out;
-            transition: background 0.2s;
+        /* 交互微动效 */
+        .art-cat-anchor:hover {
+            transform: translateY(-4px) scale(1.02);
         }
-        .cat-head {
-            position: absolute;
-            top: -18px;
-            left: 5px;
-            width: 32px;
-            height: 26px;
-            background: #3a3a3c;
-            border-radius: 14px;
+        .art-cat-anchor:active .art-cat-avatar {
+            transform: scale(0.92);
         }
-        /* 耳朵 */
-        .cat-ear {
-            position: absolute;
-            top: -7px;
-            width: 0;
-            height: 0;
-            border-left: 5px solid transparent;
-            border-right: 5px solid transparent;
-            border-bottom: 9px solid #3a3a3c;
+        @keyframes cat-float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
         }
-        .cat-ear.left { left: 4px; transform: rotate(-15deg); }
-        .cat-ear.right { right: 4px; transform: rotate(15deg); }
-        /* 眼睛 */
-        .cat-eye {
-            position: absolute;
-            top: 10px;
-            width: 4px;
-            height: 4px;
-            background: #f5f5f7;
-            border-radius: 50%;
-            transition: all 0.15s;
-        }
-        .cat-eye.left { left: 7px; }
-        .cat-eye.right { right: 7px; }
-        /* 尾巴 */
-        .cat-tail {
-            position: absolute;
-            right: -8px;
-            bottom: 8px;
-            width: 14px;
-            height: 6px;
-            background: #3a3a3c;
-            border-radius: 4px;
-            transform-origin: left center;
-            animation: cat-wag 1.8s infinite ease-in-out;
-        }
-        /* 动画骨骼帧 */
-        @keyframes cat-breathe {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.03, 0.96); }
-        }
-        @keyframes cat-wag {
-            0%, 100% { transform: rotate(0deg); }
-            50% { transform: rotate(28deg); }
-        }
-        /* 悬停深度状态反馈 */
-        .cat-container:hover .cat-body, .cat-container:hover .cat-head {
-            background: #0071e3; /* 变成苹果标志性明亮蓝色 */
-        }
-        .cat-container:hover .cat-ear {
-            border-bottom-color: #0071e3;
-        }
-        .cat-container:hover .cat-eye {
-            transform: scaleY(0.2); /* 眯起眼睛笑 */
-        }
-        .cat-container:hover .cat-tail {
-            background: #0071e3;
-            animation-duration: 0.6s; /* 加快摇尾巴速度 */
+        @keyframes shadow-pulse {
+            0%, 100% { transform: scale(1); opacity: 0.4; }
+            50% { transform: scale(0.8); opacity: 0.8; }
         }
     </style>
 </head>
@@ -184,29 +167,23 @@
 
     <div class="container">
         <header>
-            <div style="position: relative;">
+            <div>
                 <h2>A股多维指标全景看板</h2>
                 <div style="font-size: 14px; color: var(--apple-text-secondary); margin-top: 2px;">Enterprise Multidimensional Analytics Platform</div>
-                
-                <div class="cat-container" onclick="meowInteract()">
-                    <div class="cat-bubble" id="catMsg">喵~</div>
-                    <div class="cat-body">
-                        <div class="cat-head">
-                            <div class="cat-ear left"></div>
-                            <div class="cat-ear right"></div>
-                            <div class="cat-eye left" id="eyeL"></div>
-                            <div class="cat-eye right" id="eyeR"></div>
-                        </div>
-                        <div class="cat-tail"></div>
-                    </div>
-                </div>
             </div>
-            
             <div class="time-monitor">
                 <div>当前系统时间：<span id="liveClock" class="time-live">00:00:00</span></div>
                 <div>安全审计节点：<span id="lastModified">-</span></div>
             </div>
         </header>
+
+        <div class="art-cat-anchor" onclick="triggerCatMeow()">
+            <div class="art-cat-bubble" id="artCatMsg">喵~</div>
+            <div class="art-cat-pod">
+                <div class="art-cat-avatar"></div>
+            </div>
+            <div class="art-cat-shadow"></div>
+        </div>
 
         <div class="card">
             <div class="control-header">
@@ -285,38 +262,29 @@
         let yearCachedData = []; 
         let currentSortField = '';
         let currentSortOrder = 'desc';
-        let bubbleTimer = null;
+        let catTimer = null;
 
-        // 🧠 治愈小猫状态机与量化猫语互动系统
-        const catQuotes = [
-            "自检全部通过，今日数据纯度 100%，喵！",
-            "看盘累了吗？来摸摸我，拒绝高频未来函数，喵~",
-            "本月核心资产估值回吐，安全边际极度舒适，喵呜...",
-            "Tushare 官方数据链稳定连接中，一切尽在掌握，喵~",
-            "别看 K 线了，看我摇尾巴不好吗？喵~",
-            "正在偷吃服务器的多维真数矩阵，嗝，喵！",
-            "市值换算已锁定‘亿元’，拒绝数值漂移，喵哈！"
+        // 🧠 3D 潮玩猫咪量化状态机段子库
+        const premiumCatQuotes = [
+            "✨ 本日多维数据管道连通度 100%，真数浓度已封顶，喵~",
+            "📈 刚刚帮你看了一下茅台，最新截面均值符合安全边际，喵！",
+            "🛡️ 20年无未来函数时空管道已全量合拢，拒绝数值漂移，喵呜~",
+            "💼 换手率与总市值已强制归一化处理，请安心审阅，综合清算完毕！",
+            "☕ 盯盘累了吗？点我有益于释放量化因子的回撤焦虑哦，喵~",
+            "🐳 正在为您偷偷监视各大板块算术均值...发现套利空间！开玩笑的，喵~"
         ];
 
-        function meowInteract() {
-            const bubble = document.getElementById('catMsg');
-            const eyeL = document.getElementById('eyeL');
-            const eyeR = document.getElementById('eyeR');
+        function triggerCatMeow() {
+            const bubble = document.getElementById('artCatMsg');
+            const randomQuote = premiumCatQuotes[Math.floor(Math.random() * premiumCatQuotes.length)];
             
-            // 随机产生一句量化猫语
-            const randomQuote = catQuotes[Math.floor(Math.random() * catQuotes.length)];
             bubble.innerText = randomQuote;
             bubble.classList.add('show');
             
-            // 瞬间切换成俏皮的“wink眨眼”或者开心的“圆眼”表情
-            eyeL.style.transform = "scaleY(0.1)";
-            eyeR.style.transform = "scaleY(1)";
-            
-            clearTimeout(bubbleTimer);
-            bubbleTimer = setTimeout(() => {
+            clearTimeout(catTimer);
+            catTimer = setTimeout(() => {
                 bubble.classList.remove('show');
-                eyeL.style.transform = "scaleY(1)";
-            }, 2500);
+            }, 3000);
         }
 
         function startClock() {
