@@ -23,7 +23,7 @@
             -webkit-font-smoothing: antialiased;
         }
         .container { max-width: 1440px; margin: 0 auto; }
-        header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 35px; padding: 0 8px; }
+        header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 35px; padding: 0 8px; position: relative; }
         h2 { font-size: 30px; font-weight: 600; letter-spacing: -0.8px; margin: 0; }
         .time-monitor { text-align: right; font-size: 13px; color: var(--apple-text-secondary); }
         .time-live { font-family: monospace; font-weight: 600; color: var(--apple-text-main); font-size: 14px; }
@@ -44,7 +44,6 @@
         td { padding: 14px 12px; border-bottom: 1px solid #f5f5f7; font-size: 13px; white-space: nowrap; text-align: center; }
         tr:hover td { background-color: #f5f5f7; }
         
-        /* 🍎 经典双轴比对颜色对齐规范 */
         .col-now { background-color: #fffde7 !important; font-weight: 500; color: #b71c1c; }
         .col-hist { background-color: #f3e5f5 !important; font-weight: 500; color: #4a148c; }
         
@@ -54,16 +53,155 @@
         .badge-main { background: #e1f5fe; color: #0288d1; }
         .badge-cy { background: #e8f5e9; color: #388e3c; }
         .badge-kc { background: #fff3e0; color: #f57c00; }
+
+        /* ==========================================
+           🍏 纯 CSS 拟物风治愈小猫核心动效样式架
+           ========================================== */
+        .cat-container {
+            position: absolute;
+            left: 320px;
+            bottom: -5px;
+            width: 70px;
+            height: 60px;
+            cursor: pointer;
+            user-select: none;
+            z-index: 50;
+        }
+        .cat-bubble {
+            position: absolute;
+            top: -45px;
+            left: 50%;
+            transform: translateX(-50%) scale(0);
+            background: #1d1d1f;
+            color: #ffffff;
+            padding: 6px 12px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 500;
+            white-space: nowrap;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            opacity: 0;
+            pointer-events: none;
+        }
+        .cat-bubble::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 5px 5px 0;
+            border-style: solid;
+            border-color: #1d1d1f transparent;
+            display: block;
+            width: 0;
+        }
+        .cat-bubble.show {
+            transform: translateX(-50%) scale(1);
+            opacity: 1;
+        }
+        .cat-body {
+            position: absolute;
+            bottom: 0;
+            width: 55px;
+            height: 35px;
+            background: #3a3a3c;
+            border-radius: 20px 20px 10px 10px;
+            animation: cat-breathe 2.5s infinite ease-in-out;
+            transition: background 0.2s;
+        }
+        .cat-head {
+            position: absolute;
+            top: -18px;
+            left: 5px;
+            width: 32px;
+            height: 26px;
+            background: #3a3a3c;
+            border-radius: 14px;
+        }
+        /* 耳朵 */
+        .cat-ear {
+            position: absolute;
+            top: -7px;
+            width: 0;
+            height: 0;
+            border-left: 5px solid transparent;
+            border-right: 5px solid transparent;
+            border-bottom: 9px solid #3a3a3c;
+        }
+        .cat-ear.left { left: 4px; transform: rotate(-15deg); }
+        .cat-ear.right { right: 4px; transform: rotate(15deg); }
+        /* 眼睛 */
+        .cat-eye {
+            position: absolute;
+            top: 10px;
+            width: 4px;
+            height: 4px;
+            background: #f5f5f7;
+            border-radius: 50%;
+            transition: all 0.15s;
+        }
+        .cat-eye.left { left: 7px; }
+        .cat-eye.right { right: 7px; }
+        /* 尾巴 */
+        .cat-tail {
+            position: absolute;
+            right: -8px;
+            bottom: 8px;
+            width: 14px;
+            height: 6px;
+            background: #3a3a3c;
+            border-radius: 4px;
+            transform-origin: left center;
+            animation: cat-wag 1.8s infinite ease-in-out;
+        }
+        /* 动画骨骼帧 */
+        @keyframes cat-breathe {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.03, 0.96); }
+        }
+        @keyframes cat-wag {
+            0%, 100% { transform: rotate(0deg); }
+            50% { transform: rotate(28deg); }
+        }
+        /* 悬停深度状态反馈 */
+        .cat-container:hover .cat-body, .cat-container:hover .cat-head {
+            background: #0071e3; /* 变成苹果标志性明亮蓝色 */
+        }
+        .cat-container:hover .cat-ear {
+            border-bottom-color: #0071e3;
+        }
+        .cat-container:hover .cat-eye {
+            transform: scaleY(0.2); /* 眯起眼睛笑 */
+        }
+        .cat-container:hover .cat-tail {
+            background: #0071e3;
+            animation-duration: 0.6s; /* 加快摇尾巴速度 */
+        }
     </style>
 </head>
 <body>
 
     <div class="container">
         <header>
-            <div>
+            <div style="position: relative;">
                 <h2>A股多维指标全景看板</h2>
                 <div style="font-size: 14px; color: var(--apple-text-secondary); margin-top: 2px;">Enterprise Multidimensional Analytics Platform</div>
+                
+                <div class="cat-container" onclick="meowInteract()">
+                    <div class="cat-bubble" id="catMsg">喵~</div>
+                    <div class="cat-body">
+                        <div class="cat-head">
+                            <div class="cat-ear left"></div>
+                            <div class="cat-ear right"></div>
+                            <div class="cat-eye left" id="eyeL"></div>
+                            <div class="cat-eye right" id="eyeR"></div>
+                        </div>
+                        <div class="cat-tail"></div>
+                    </div>
+                </div>
             </div>
+            
             <div class="time-monitor">
                 <div>当前系统时间：<span id="liveClock" class="time-live">00:00:00</span></div>
                 <div>安全审计节点：<span id="lastModified">-</span></div>
@@ -143,10 +281,43 @@
         </div>
     </div>
 
-    <script {nonce}>
+    <script>
         let yearCachedData = []; 
         let currentSortField = '';
         let currentSortOrder = 'desc';
+        let bubbleTimer = null;
+
+        // 🧠 治愈小猫状态机与量化猫语互动系统
+        const catQuotes = [
+            "自检全部通过，今日数据纯度 100%，喵！",
+            "看盘累了吗？来摸摸我，拒绝高频未来函数，喵~",
+            "本月核心资产估值回吐，安全边际极度舒适，喵呜...",
+            "Tushare 官方数据链稳定连接中，一切尽在掌握，喵~",
+            "别看 K 线了，看我摇尾巴不好吗？喵~",
+            "正在偷吃服务器的多维真数矩阵，嗝，喵！",
+            "市值换算已锁定‘亿元’，拒绝数值漂移，喵哈！"
+        ];
+
+        function meowInteract() {
+            const bubble = document.getElementById('catMsg');
+            const eyeL = document.getElementById('eyeL');
+            const eyeR = document.getElementById('eyeR');
+            
+            // 随机产生一句量化猫语
+            const randomQuote = catQuotes[Math.floor(Math.random() * catQuotes.length)];
+            bubble.innerText = randomQuote;
+            bubble.classList.add('show');
+            
+            // 瞬间切换成俏皮的“wink眨眼”或者开心的“圆眼”表情
+            eyeL.style.transform = "scaleY(0.1)";
+            eyeR.style.transform = "scaleY(1)";
+            
+            clearTimeout(bubbleTimer);
+            bubbleTimer = setTimeout(() => {
+                bubble.classList.remove('show');
+                eyeL.style.transform = "scaleY(1)";
+            }, 2500);
+        }
 
         function startClock() {
             setInterval(() => { document.getElementById('liveClock').innerText = new Date().toTimeString().split(' ')[0]; }, 1000);
@@ -173,19 +344,18 @@
             }
         }
 
-        // 🧠 核心优化：读取专属独立文件夹 data_slices/ 下的按年归档切片子数据
         async function onYearMasterChange() {
             const selectedYear = document.getElementById('yearFilterSelect').value;
-            document.getElementById('dataStatus').innerText = `⏳ 正在通过物理独立夹调用 data_slices/data_${selectedYear}.json ...`;
+            document.getElementById('dataStatus').innerText = `⏳ 正在通过独立目录调用 data_slices/data_${selectedYear}.json ...`;
             
             try {
                 const res = await fetch(`data_slices/data_${selectedYear}.json?cb=${Date.now()}`);
                 const loadedSlice = await res.json();
                 yearCachedData = Array.isArray(loadedSlice) ? loadedSlice : [];
-                document.getElementById('dataStatus').innerText = `✨ data_slices/ 独立文件夹分区读取完成！已自动加载该年年报核心切面。`;
+                document.getElementById('dataStatus').innerText = `✨ data_slices/ 分区数据调取成功！已自动对齐展示年报切面。`;
                 calculateAndRender();
             } catch {
-                document.getElementById('dataStatus').innerText = `⚠️ 独立分区子库读取失败，请检查文件是否存在`;
+                document.getElementById('dataStatus').innerText = `⚠️ data_slices/ 独立子库读取失败`;
             }
         }
 
@@ -200,10 +370,7 @@
             tbody.innerHTML = "";
             const searchKeyword = document.getElementById('stockSearchInput').value.trim().toLowerCase();
 
-            // 🎯 核心优化：前台去掉月份下拉，默认在后端全量月份数据中锁定 month === 12 （即年报）进行精确定向比对呈现
             let displaySet = yearCachedData.filter(item => item.month === 12);
-            
-            // 如果某年刚上市（比如年末还没到12月），退一步选择该年库里的最后一条有效记录
             if (displaySet.length === 0 && yearCachedData.length > 0) {
                 const maxMonth = Math.max(...yearCachedData.map(o => o.month));
                 displaySet = yearCachedData.filter(item => item.month === maxMonth);
@@ -225,11 +392,10 @@
             }
 
             if (displaySet.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="34" style="text-align:center;color:#86868b;padding:50px;">🔍 暂无匹配年报记录</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="34" style="text-align:center;color:#86868b;padding:50px;">🔍 暂无匹配记录</td></tr>`;
                 return;
             }
 
-            // 全量 15 个量化财务指标的求和字典（用于截面均值算术计算）
             const numericFields = [
                 'now_price','history_price','now_mv','total_mv','now_turnover','turnover_ratio',
                 'now_pe','pe','now_pb','pb','now_dv_ratio','dv_ratio','now_roe','roe','now_roa','roa',
@@ -279,7 +445,6 @@
                 numericFields.forEach(f => sums[f] += (parseFloat(stock[f]) || 0));
             });
 
-            // 联动重绘底部算术算力均值栏
             let avgRow = document.createElement('tr'); avgRow.className = "avg-row";
             let len = displaySet.length;
             
