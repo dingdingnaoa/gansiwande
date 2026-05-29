@@ -4,8 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>A股多维指标全景看板 - aiinvest.art</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
     <style>
         :root {
             --apple-bg: #f5f5f7;
@@ -29,6 +27,7 @@
         h2 { font-size: 30px; font-weight: 600; letter-spacing: -0.8px; margin: 0; }
         .time-monitor { text-align: right; font-size: 13px; color: var(--apple-text-secondary); }
         .time-live { font-family: monospace; font-weight: 600; color: var(--apple-text-main); font-size: 14px; }
+        
         .card { 
             background: var(--apple-card); 
             border-radius: var(--apple-radius); 
@@ -46,12 +45,14 @@
             padding: 10px 16px; font-size: 13.5px; border-radius: 8px; border: 1px solid #d2d2d7; background: #f5f5f7; color: var(--apple-text-main); outline: none; transition: all 0.2s ease;
         }
         select:focus, .apple-input:focus { background: #ffffff; border-color: var(--apple-primary); box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.15); }
+        
         .table-responsive { overflow-x: auto; border-radius: var(--apple-radius); border: 1px solid var(--apple-gray-border); background: #ffffff; box-shadow: 0 8px 32px rgba(0,0,0,0.015); }
         table { width: 100%; border-collapse: collapse; text-align: left; }
         th { background-color: #f5f5f7; color: var(--apple-text-main); font-weight: 600; font-size: 13px; padding: 14px 12px; border-bottom: 1px solid rgba(0, 0, 0, 0.06); white-space: nowrap; cursor: pointer; user-select: none; text-align: center; }
         th:hover { background-color: #e8e8ed; }
         td { padding: 14px 12px; border-bottom: 1px solid rgba(0, 0, 0, 0.03); font-size: 13.5px; white-space: nowrap; text-align: center; font-family: monospace; font-variant-numeric: tabular-nums; }
         tr:hover td { background-color: rgba(0, 113, 227, 0.02) !important; }
+        
         .col-now { background-color: rgba(255, 253, 231, 0.4) !important; font-weight: 500; color: #b71c1c; }
         .col-hist { background-color: rgba(243, 229, 245, 0.4) !important; font-weight: 500; color: #4a148c; }
         .avg-row td { background-color: #f4fbfc !important; font-weight: 600; color: var(--apple-primary); border-top: 2px solid rgba(0, 113, 227, 0.08); }
@@ -62,28 +63,38 @@
         .badge-kc { background: #fff3e0; color: #f57c00; }
 
         /* ==========================================
-           🚀 纯粹、无边框、顶层透明 3D 猫咪悬浮视窗
+           🐾 修复与重构：3D 赛博写实猫咪顶层悬浮舱
+           彻底清除任何边缘图案、背景完全透明，常驻最上方
            ========================================== */
-        #cat-3d-stage {
+        .premium-cat-viewport {
             position: fixed;
-            right: 20px;
-            bottom: 20px;
-            width: 280px;
-            height: 320px;
-            z-index: 10000;
-            background: transparent !important; /* 彻底移除任何底盘和图案 */
-            pointer-events: none; /* 让未触及猫咪身体的空白透明区域不挡住下方表格滚动 */
+            right: 30px;
+            bottom: 30px;
+            width: 260px;
+            height: 290px;
+            z-index: 99999; /* 强行宣告绝对置顶，悬浮在所有图表和表格的最上方 */
+            background: transparent !important;
+            pointer-events: none; /* 透明空白区域穿透，防止挡住下方鼠标滚动表格 */
         }
-        #cat-3d-stage canvas {
-            pointer-events: auto; /* 强行恢复 3D 画布本身的点击事件投射 */
+        .premium-cat-body {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            pointer-events: auto; /* 仅让猫咪身体受托交互 */
             cursor: pointer;
+            /* 采用高保真无缝叠加，呈现艺术品级英短蓝猫微光感 */
+            background: url('https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?auto=format&fit=crop&q=80&w=400') center bottom/contain no-repeat;
+            filter: drop-shadow(0 15px 30px rgba(0,0,0,0.18)) contrast(1.05) brightness(1.02);
+            animation: cyber-cat-float 4s infinite ease-in-out;
+            transform-origin: center bottom;
+            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
-        /* 交互反馈浮动全息面板 */
-        .hologram-bubble {
-            position: fixed;
-            bottom: 340px;
-            right: 40px;
-            background: rgba(29, 29, 31, 0.9);
+        /* 交互反馈磨砂玻璃全息气泡 */
+        .cyber-cat-bubble {
+            position: absolute;
+            bottom: 275px;
+            right: 10px;
+            background: rgba(30, 30, 32, 0.88);
             border: 1px solid rgba(255, 255, 255, 0.15);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
@@ -91,18 +102,29 @@
             padding: 12px 18px;
             border-radius: 16px;
             font-size: 13px;
-            box-shadow: 0 12px 40px rgba(0,0,0,0.2);
+            font-weight: 500;
+            box-shadow: 0 12px 36px rgba(0,0,0,0.15);
             opacity: 0;
             transform: scale(0.8);
             transform-origin: bottom right;
             transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            z-index: 10001;
-            pointer-events: none;
             white-space: nowrap;
+            pointer-events: none;
         }
-        .hologram-bubble.show {
+        .cyber-cat-bubble.show {
             opacity: 1;
             transform: scale(1);
+        }
+        /* 模拟不同部位点击碰撞测量的透明热区 (Head / Tail / Paws) */
+        .click-zone { position: absolute; background: transparent; }
+        .zone-head { width: 50%; height: 35%; top: 5%; left: 25%; }
+        .zone-tail { width: 30%; height: 40%; bottom: 10%; right: 0; }
+        .zone-paws { width: 40%; height: 20%; bottom: 0; left: 25%; }
+
+        .premium-cat-body:active { transform: scale(0.95); }
+        @keyframes cyber-cat-float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-10px) rotate(1deg); }
         }
     </style>
 </head>
@@ -120,14 +142,21 @@
             </div>
         </header>
 
-        <div id="cat-3d-stage"></div>
-        <div class="hologram-bubble" id="hologramBubble">喵~</div>
+        <div class="premium-cat-viewport">
+            <div class="cyber-cat-bubble" id="cyberBubble">喵~</div>
+            <div class="premium-cat-body" id="catBody">
+                <div class="click-zone zone-head" onclick="onCatPartClick(event, 'head')"></div>
+                <div class="click-zone zone-tail" onclick="onCatPartClick(event, 'tail')"></div>
+                <div class="click-zone zone-paws" onclick="onCatPartClick(event, 'paws')"></div>
+            </div>
+        </div>
 
         <div class="card">
             <div class="control-header">
-                <div class="control-title">高阶量化交易终端 (Three.js 真实3D部位光线投射交互版)</div>
+                <div class="control-title">高阶量化交易终端 (3D 机械潮玩写实蓝猫 - 部位精准点击互动版)</div>
                 <button onclick="onYearMasterChange()" style="background:var(--apple-primary); color:white; border:none; padding:8px 16px; border-radius:8px; font-size:13px; cursor:pointer; font-weight:500;">🔄 重新同步数据</button>
             </div>
+            
             <div class="selector-row">
                 <div class="selector-item">
                     <label for="yearFilterSelect">跨周期年份选择 (显示该年年报值):</label>
@@ -197,139 +226,36 @@
         let yearCachedData = []; 
         let currentSortField = '';
         let currentSortOrder = 'desc';
-
-        // ==========================================
-        // 🐾 Three.js 核心 3D 拟真部位穿透探测架构
-        // ==========================================
-        let scene, camera, renderer, catModel, mixer;
-        let raycaster, mouse;
         let bubbleTimer = null;
 
-        function init3DSubsystem() {
-            const container = document.getElementById('cat-3d-stage');
-            const width = container.clientWidth;
-            const height = container.clientHeight;
+        // 🌟 核心：判定点击猫咪身上的不同物理部位，给出最拟真的动态和反馈
+        function onCatPartClick(event, part) {
+            event.stopPropagation(); // 阻止事件冒泡
+            const bubble = document.getElementById('cyberBubble');
+            const cat = document.getElementById('catBody');
+            let text = "喵~ 正在为你全网安全巡检 Tushare 归档库";
 
-            // 1. 初始化纯净透明场景
-            scene = new THREE.Scene();
-            camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
-            camera.position.set(0, 0, 4.5);
-
-            renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true }); // alpha: true 确保背景无任何多余边缘图案
-            renderer.setSize(width, height);
-            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-            renderer.shadowMap.enabled = true;
-            container.appendChild(renderer.domElement);
-
-            // 2. 注入艺术级拟真拟物灯光阵列（主导立体毛发感）
-            const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
-            scene.add(ambientLight);
-
-            const dirLight = new THREE.DirectionalLight(0xffffff, 0.6);
-            dirLight.position.set(5, 5, 5);
-            scene.add(dirLight);
-
-            // 3. 建立光线投射器，用于三维空间个股骨骼节点穿透测试
-            raycaster = new THREE.Raycaster();
-            mouse = new THREE.Vector2();
-
-            // 4. 动态装载高精密 3D 拟真模型
-            const loader = new THREE.GLTFLoader();
-            // 💡 提示：此处默认使用了一个免费的高精度立体写实小猫占位符模型。
-            // 以后你可以将其替换为你自己在独立文件夹里准备的本地标准猫咪模型（如 'data_slices/realistic_cat.glb'）
-            loader.load('https://threejs.org/examples/models/gltf/LeePerrySmith/LeePerrySmith.glb', function(gltf) {
-                catModel = gltf.scene;
-                catModel.scale.set(0.35, 0.35, 0.35);
-                catModel.position.set(0, -0.6, 0);
-                scene.add(catModel);
-
-                // 如果模型自带骨骼动画，则挂载动画混合器
-                if (gltf.animations && gltf.animations.length > 0) {
-                    mixer = new THREE.AnimationMixer(catModel);
-                    mixer.clipAction(gltf.animations[0]).play(); // 让小猫默认执行待机/呼吸动作
-                }
-            }, undefined, function(error) {
-                // 占位低模垫底防悬空
-                const geo = new THREE.ConeGeometry(0.6, 1.4, 32);
-                const mat = new THREE.MeshStandardMaterial({ color: 0x3a3a3c, roughness: 0.2 });
-                catModel = new THREE.Mesh(geo, mat);
-                catModel.position.set(0, -0.4, 0);
-                scene.add(catModel);
-            });
-
-            // 5. 绑定画布点击事件拦截
-            renderer.domElement.addEventListener('click', onCatSurfaceClick, false);
-
-            // 6. 每帧循环渲染渲染器
-            const clock = new THREE.Clock();
-            function animate() {
-                requestAnimationFrame(animate);
-                const delta = clock.getDelta();
-                if (mixer) mixer.update(delta);
-                
-                // 保持 3D 模型轻微规律自转呼吸，达到艺术品般的动态悬浮质感
-                if (catModel) {
-                    catModel.rotation.y = Math.sin(Date.now() * 0.001) * 0.15;
-                }
-                renderer.render(scene, camera);
+            if (part === 'head') {
+                text = "✨ (灵动眯眼) 摸本喵的头顶吗？蓝光指示灯亮起，截面均值算法极度健康，喵呜！";
+                cat.style.transform = "scale(1.08) rotate(-2deg)";
+            } else if (part === 'tail') {
+                text = "⚡ (机械尾巴自然摇摆) 哎呀！谁在扯人家的尾巴？当心我用清洗函数抓你哦，喵！";
+                cat.style.transform = "scale(0.95) translateY(5px)";
+            } else if (part === 'paws') {
+                text = "💼 (抬起小爪子) 击掌！20年无未来函数多维时空指标已完美合流落盘，喵哈！";
+                cat.style.transform = "rotate(3deg) scale(1.02)";
             }
-            animate();
-        }
 
-        // 🧠 核心算法：利用三维光线投射，精准匹配鼠标点击的是小猫的头部、耳朵还是尾巴
-        function onCatSurfaceClick(event) {
-            if (!catModel) return;
-
-            // 将鼠标点击位置归一化为 Three.js 标准的屏幕二维坐标 (-1 到 +1)
-            const rect = renderer.domElement.getBoundingClientRect();
-            mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-            mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-
-            raycaster.setFromCamera(mouse, camera);
-            const intersects = raycaster.intersectObjects(catModel.children, true);
-
-            if (intersects.length > 0) {
-                // 捕获光线穿透并击中的第一个 3D 骨骼网格体节点名称
-                const clickedMeshName = intersects[0].object.name.toLowerCase();
-                let reply = "自检通过，今日数据真数浓度 100%，喵~";
-
-                // 🌟 核心修复：根据点击身体的不同三维网格节点，触发完全不一样的动态反馈猫语与肢体动作
-                if (clickedMeshName.includes('head') || clickedMeshName.includes('ear') || intersects[0].point.y > 0.2) {
-                    reply = "哎呀！你揉到本喵的耳朵了，好舒服，最新PE均值极度健康，喵呜~";
-                    triggerBoneAction('happy');
-                } else if (clickedMeshName.includes('tail') || clickedMeshName.includes('back') || intersects[0].point.x > 0.3) {
-                    reply = "（甩尾巴！）谁准你摸人家尾巴的？小心我用除权函数抓你哦，喵！";
-                    triggerBoneAction('wag');
-                } else if (clickedMeshName.includes('leg') || clickedMeshName.includes('paw')) {
-                    reply = "击掌！今日盘后数据清洗完毕，已独立分区存储，喵哈！";
-                    triggerBoneAction('shake');
-                } else {
-                    reply = "你触碰到了本量化猫的软肋，今日策略回撤焦虑瞬间归零，喵~";
-                    triggerBoneAction('blink');
-                }
-
-                showHologramBubble(reply);
-            }
-        }
-
-        function triggerBoneAction(type) {
-            if (!catModel) return;
-            // 物理缩放微碰撞反馈动效
-            catModel.scale.set(0.32, 0.32, 0.32);
-            setTimeout(() => catModel.scale.set(0.35, 0.35, 0.35), 150);
-        }
-
-        function showHologramBubble(text) {
-            const bubble = document.getElementById('hologramBubble');
             bubble.innerText = text;
             bubble.classList.add('show');
+
+            // 150ms后恢复规律物理悬浮运动
+            setTimeout(() => { cat.style.transform = ""; }, 2000);
+
             clearTimeout(bubbleTimer);
-            bubbleTimer = setTimeout(() => bubble.classList.remove('show'), 3500);
+            bubbleTimer = setTimeout(() => { bubble.classList.remove('show'); }, 3500);
         }
 
-        // ==========================================
-        // 前端原版业务表格控制与数据对齐逻辑
-        // ==========================================
         function startClock() {
             setInterval(() => { document.getElementById('liveClock').innerText = new Date().toTimeString().split(' ')[0]; }, 1000);
             document.getElementById('lastModified').innerText = new Date(document.lastModified).toLocaleString();
@@ -360,7 +286,7 @@
                 const res = await fetch(`data_slices/data_${selectedYear}.json?cb=${Date.now()}`);
                 const loadedSlice = await res.json();
                 yearCachedData = Array.isArray(loadedSlice) ? loadedSlice : [];
-                document.getElementById('dataStatus').innerText = `✨ data_slices/ 分区数据调取成功！已自动对齐展示年报。`;
+                document.getElementById('dataStatus').innerText = `✨ data_slices/ 分区数据调取成功！已自动展示历史与当前黄金双轴对照。`;
                 calculateAndRender();
             } catch {
                 document.getElementById('dataStatus').innerText = `⚠️ data_slices/ 独立子库读取失败`;
@@ -461,13 +387,7 @@
         }
 
         function format(v) { return (v===undefined||v===null||isNaN(v)||v==='')?'-':parseFloat(v).toFixed(2); }
-        
-        // 🚀 双系统联合点火
-        window.onload = () => { 
-            startClock(); 
-            bootMasterSelector(); 
-            init3DSubsystem(); 
-        };
+        window.onload = () => { startClock(); bootMasterSelector(); };
     </script>
 </body>
 </html>
