@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>A股多维指标全景看板 - aiinvest.art</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
         :root {
             --apple-bg: #f5f5f7;
@@ -63,68 +64,49 @@
         .badge-kc { background: #fff3e0; color: #f57c00; }
 
         /* ==========================================
-           🐾 修复与重构：3D 赛博写实猫咪顶层悬浮舱
-           彻底清除任何边缘图案、背景完全透明，常驻最上方
+           🚀 真正绝对置顶（z-index: 100000）3D WebGL 空间舱
+           无任何多余边框、纯粹透明、常驻页面最上方
            ========================================== */
-        .premium-cat-viewport {
+        #cyber-cat-container {
             position: fixed;
-            right: 30px;
-            bottom: 30px;
-            width: 260px;
-            height: 290px;
-            z-index: 99999; /* 强行宣告绝对置顶，悬浮在所有图表和表格的最上方 */
+            right: 20px;
+            bottom: 20px;
+            width: 320px;
+            height: 380px;
+            z-index: 100000; /* 强制置于页面所有图表、弹窗的最前方 */
             background: transparent !important;
-            pointer-events: none; /* 透明空白区域穿透，防止挡住下方鼠标滚动表格 */
+            pointer-events: none; /* 透明空白区域事件穿透，不影响下层表格滚动 */
         }
-        .premium-cat-body {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            pointer-events: auto; /* 仅让猫咪身体受托交互 */
+        #cyber-cat-container canvas {
+            pointer-events: auto; /* 强行让 3D 猫咪画布本身接收点击探测 */
             cursor: pointer;
-            /* 采用高保真无缝叠加，呈现艺术品级英短蓝猫微光感 */
-            background: url('https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?auto=format&fit=crop&q=80&w=400') center bottom/contain no-repeat;
-            filter: drop-shadow(0 15px 30px rgba(0,0,0,0.18)) contrast(1.05) brightness(1.02);
-            animation: cyber-cat-float 4s infinite ease-in-out;
-            transform-origin: center bottom;
-            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
-        /* 交互反馈磨砂玻璃全息气泡 */
-        .cyber-cat-bubble {
-            position: absolute;
-            bottom: 275px;
-            right: 10px;
-            background: rgba(30, 30, 32, 0.88);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
+        /* 磨砂玻璃全息拟物对话框 */
+        .cyber-hologram-bubble {
+            position: fixed;
+            bottom: 390px;
+            right: 40px;
+            background: rgba(20, 20, 22, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
             color: #ffffff;
-            padding: 12px 18px;
-            border-radius: 16px;
+            padding: 14px 20px;
+            border-radius: 18px;
             font-size: 13px;
-            font-weight: 500;
-            box-shadow: 0 12px 36px rgba(0,0,0,0.15);
+            box-shadow: 0 16px 48px rgba(0, 0, 0, 0.3);
             opacity: 0;
             transform: scale(0.8);
             transform-origin: bottom right;
-            transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            white-space: nowrap;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 100001;
             pointer-events: none;
+            white-space: nowrap;
+            letter-spacing: 0.3px;
         }
-        .cyber-cat-bubble.show {
+        .cyber-hologram-bubble.show {
             opacity: 1;
             transform: scale(1);
-        }
-        /* 模拟不同部位点击碰撞测量的透明热区 (Head / Tail / Paws) */
-        .click-zone { position: absolute; background: transparent; }
-        .zone-head { width: 50%; height: 35%; top: 5%; left: 25%; }
-        .zone-tail { width: 30%; height: 40%; bottom: 10%; right: 0; }
-        .zone-paws { width: 40%; height: 20%; bottom: 0; left: 25%; }
-
-        .premium-cat-body:active { transform: scale(0.95); }
-        @keyframes cyber-cat-float {
-            0%, 100% { transform: translateY(0) rotate(0deg); }
-            50% { transform: translateY(-10px) rotate(1deg); }
         }
     </style>
 </head>
@@ -142,21 +124,14 @@
             </div>
         </header>
 
-        <div class="premium-cat-viewport">
-            <div class="cyber-cat-bubble" id="cyberBubble">喵~</div>
-            <div class="premium-cat-body" id="catBody">
-                <div class="click-zone zone-head" onclick="onCatPartClick(event, 'head')"></div>
-                <div class="click-zone zone-tail" onclick="onCatPartClick(event, 'tail')"></div>
-                <div class="click-zone zone-paws" onclick="onCatPartClick(event, 'paws')"></div>
-            </div>
-        </div>
+        <div id="cyber-cat-container"></div>
+        <div class="cyber-hologram-bubble" id="cyberCatBubble">喵~</div>
 
         <div class="card">
             <div class="control-header">
-                <div class="control-title">高阶量化交易终端 (3D 机械潮玩写实蓝猫 - 部位精准点击互动版)</div>
+                <div class="control-title">高阶量化交易终端 (Three.js 算法编译 3D 机械猫咪 - 纯净置顶版)</div>
                 <button onclick="onYearMasterChange()" style="background:var(--apple-primary); color:white; border:none; padding:8px 16px; border-radius:8px; font-size:13px; cursor:pointer; font-weight:500;">🔄 重新同步数据</button>
             </div>
-            
             <div class="selector-row">
                 <div class="selector-item">
                     <label for="yearFilterSelect">跨周期年份选择 (显示该年年报值):</label>
@@ -226,36 +201,205 @@
         let yearCachedData = []; 
         let currentSortField = '';
         let currentSortOrder = 'desc';
+
+        // ==========================================
+        // 🐾 THREE.JS WEBGL 原生立体机械猫咪算法编译引擎
+        // ==========================================
+        let scene, camera, renderer, raycaster, mouse;
+        let catGroup, catHead, catBody, catTail, leftEye, rightEye;
         let bubbleTimer = null;
+        let baseScale = 1.0;
 
-        // 🌟 核心：判定点击猫咪身上的不同物理部位，给出最拟真的动态和反馈
-        function onCatPartClick(event, part) {
-            event.stopPropagation(); // 阻止事件冒泡
-            const bubble = document.getElementById('cyberBubble');
-            const cat = document.getElementById('catBody');
-            let text = "喵~ 正在为你全网安全巡检 Tushare 归档库";
+        function initCyberCatWebGL() {
+            const container = document.getElementById('cyber-cat-container');
+            const w = container.clientWidth;
+            const h = container.clientHeight;
 
-            if (part === 'head') {
-                text = "✨ (灵动眯眼) 摸本喵的头顶吗？蓝光指示灯亮起，截面均值算法极度健康，喵呜！";
-                cat.style.transform = "scale(1.08) rotate(-2deg)";
-            } else if (part === 'tail') {
-                text = "⚡ (机械尾巴自然摇摆) 哎呀！谁在扯人家的尾巴？当心我用清洗函数抓你哦，喵！";
-                cat.style.transform = "scale(0.95) translateY(5px)";
-            } else if (part === 'paws') {
-                text = "💼 (抬起小爪子) 击掌！20年无未来函数多维时空指标已完美合流落盘，喵哈！";
-                cat.style.transform = "rotate(3deg) scale(1.02)";
+            // 1. 纯净透明的 3D 虚拟时空
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(40, w / h, 0.1, 1000);
+            camera.position.set(0, 0, 5.5);
+
+            renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+            renderer.setSize(w, h);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            container.appendChild(renderer.domElement);
+
+            // 2. 注入潮玩机械风质感光阵 (冷光 + 数据幽蓝测光)
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+            scene.add(ambientLight);
+
+            const topLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            topLight.position.set(0, 10, 5);
+            scene.add(topLight);
+
+            const cyberBlueLight = new THREE.PointLight(0x00ffff, 1.5, 10);
+            cyberBlueLight.position.set(2, -1, 2);
+            scene.add(cyberBlueLight);
+
+            // 3. 极客材质包：拉丝钛合金外壳与发光数据条纹 Shader
+            const titaniumMaterial = new THREE.MeshStandardMaterial({
+                color: 0x4a4c50,
+                metalness: 0.9,
+                roughness: 0.25,
+                bumpScale: 0.05
+            });
+
+            const techCarbonMaterial = new THREE.MeshStandardMaterial({
+                color: 0x1a1b1d,
+                metalness: 0.7,
+                roughness: 0.4
+            });
+
+            // 4. 算法级装配 3D 拟真英短蓝猫立体结构
+            catGroup = new THREE.Group();
+
+            // 【猫身体】
+            const bodyGeo = new THREE.CylinderGeometry(0.5, 0.65, 1.4, 32);
+            catBody = new THREE.Mesh(bodyGeo, titaniumMaterial);
+            catBody.position.set(0, -0.4, 0);
+            catBody.name = "body";
+            catGroup.add(catBody);
+
+            // 【猫头部】
+            const headGeo = new THREE.SphereGeometry(0.55, 32, 32);
+            catHead = new THREE.Mesh(headGeo, titaniumMaterial);
+            catHead.position.set(0, 0.6, 0.1);
+            catHead.name = "head";
+
+            // 【异色赛博机械眼】呈现左蓝右黄的顶级机械潮玩瞳孔
+            const eyeGeo = new THREE.SphereGeometry(0.09, 16, 16);
+            
+            const blueEyeMat = new THREE.MeshBasicMaterial({ color: 0x00d2ff }); // 左眼：极客深邃蓝
+            leftEye = new THREE.Mesh(eyeGeo, blueEyeMat);
+            leftEye.position.set(-0.2, 0.65, 0.5);
+            leftEye.scale.set(1.2, 1.2, 0.4);
+            catHead.add(leftEye);
+
+            const goldEyeMat = new THREE.MeshBasicMaterial({ color: 0xffb300 }); // 右眼：高阶质感金黄
+            rightEye = new THREE.Mesh(eyeGeo, goldEyeMat);
+            rightEye.position.set(0.2, 0.65, 0.5);
+            rightEye.scale.set(1.2, 1.2, 0.4);
+            catHead.add(rightEye);
+
+            // 【赛博猫耳组】
+            const earGeo = new THREE.ConeGeometry(0.18, 0.4, 4);
+            const leftEar = new THREE.Mesh(earGeo, techCarbonMaterial);
+            leftEar.position.set(-0.32, 1.1, 0.1);
+            leftEar.rotation.z = 0.2;
+            leftEar.name = "head";
+            catHead.add(leftEar);
+
+            const rightEar = new THREE.Mesh(earGeo, techCarbonMaterial);
+            rightEar.position.set(0.32, 1.1, 0.1);
+            rightEar.rotation.z = -0.2;
+            rightEar.name = "head";
+            catHead.add(rightEar);
+
+            catGroup.add(catHead);
+
+            // 【机械关节尾巴】由多个分段骨骼簇拥而成
+            catTail = new THREE.Group();
+            catTail.position.set(0, -0.9, -0.4);
+            let prevSegment = catTail;
+            for(let i=0; i<5; i++) {
+                const segGeo = new THREE.SphereGeometry(0.09 - (i*0.01), 16, 16);
+                const seg = new THREE.Mesh(segGeo, techCarbonMaterial);
+                seg.position.set(0, i*0.15, -i*0.1);
+                seg.name = "tail";
+                prevSegment.add(seg);
+                prevSegment = seg;
             }
+            catGroup.add(catTail);
 
-            bubble.innerText = text;
-            bubble.classList.add('show');
+            // 【机械前爪】
+            const pawGeo = new THREE.BoxGeometry(0.15, 0.5, 0.2);
+            const leftPaw = new THREE.Mesh(pawGeo, titaniumMaterial);
+            leftPaw.position.set(-0.25, -0.9, 0.4);
+            leftPaw.name = "paws";
+            catGroup.add(leftPaw);
 
-            // 150ms后恢复规律物理悬浮运动
-            setTimeout(() => { cat.style.transform = ""; }, 2000);
+            const rightPaw = new THREE.Mesh(pawGeo, titaniumMaterial);
+            rightPaw.position.set(0.25, -0.9, 0.4);
+            rightPaw.name = "paws";
+            catGroup.add(rightPaw);
 
-            clearTimeout(bubbleTimer);
-            bubbleTimer = setTimeout(() => { bubble.classList.remove('show'); }, 3500);
+            // 调整全组在看板最前方的基准轴
+            catGroup.position.set(0, -0.2, 0);
+            scene.add(catGroup);
+
+            // 5. 绑定光线投射碰撞测试仪
+            raycaster = new THREE.Raycaster();
+            mouse = new THREE.Vector2();
+            renderer.domElement.addEventListener('click', onCyberCatRaycast, false);
+
+            // 6. 开启无边界高帧率物理动画循环
+            function animate() {
+                requestAnimationFrame(animate);
+                
+                // 模拟机械猫微弱的上下浮动和尾巴律动，呈现真正的立体空间感
+                const time = Date.now() * 0.0015;
+                catGroup.position.y = -0.2 + Math.sin(time) * 0.08;
+                catTail.rotation.z = Math.sin(time * 1.5) * 0.2;
+                catTail.rotation.x = Math.cos(time) * 0.1;
+                
+                // 眼神轻微左右追踪闪烁
+                leftEye.scale.y = (Math.sin(time * 0.5) > 0.98) ? 0.1 : 1.2; 
+                rightEye.scale.y = (Math.sin(time * 0.5) > 0.98) ? 0.1 : 1.2;
+
+                renderer.render(scene, camera);
+            }
+            animate();
         }
 
+        // 🧠 三维碰撞核心：精确判定鼠标光线击中立体猫咪的哪个零件
+        function onCyberCatRaycast(event) {
+            const rect = renderer.domElement.getBoundingClientRect();
+            mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+            mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObjects(catGroup.children, true);
+
+            if (intersects.length > 0) {
+                // 获取最先被光线射穿的 3D 部位节点代号
+                let targetPart = intersects[0].object.name;
+                if (!targetPart && intersects[0].object.parent) targetPart = intersects[0].object.parent.name;
+                
+                let text = "赛博猫咪固件运转正常，正在全天候护航数据管道。";
+
+                if (targetPart === 'head') {
+                    text = "✨ (异色瞳孔高频闪烁) 你触碰了猫咪的头部，AI 芯片主频瞬间超频，跨周期均值计算完毕，喵呜！";
+                    // 头部娇嗔摆动反馈
+                    catHead.rotation.y = 0.4;
+                    setTimeout(() => catHead.rotation.y = 0, 400);
+                } else if (targetPart === 'tail') {
+                    text = "⚡ (警告！机械尾巴快速甩动) 谁允许你擅自接触数据输出终端（尾巴）的？小心我改写你的指标逻辑哦，喵！";
+                    // 尾巴急速摇摆
+                    catTail.rotation.z = 0.8;
+                } else if (targetPart === 'paws') {
+                    text = "💼 (抬起前爪) 击掌！今日盘后中央清洗分区落盘无缝切分，无未来函数残留，喵哈！";
+                    catGroup.scale.set(1.15, 1.15, 1.15);
+                    setTimeout(() => catGroup.scale.set(1, 1, 1), 200);
+                } else {
+                    text = "🔧 核心钛合金装甲受到点击挤压，多维量化回撤焦虑瞬间归零，喵~";
+                }
+
+                showCyberHologram(text);
+            }
+        }
+
+        function showCyberHologram(text) {
+            const bubble = document.getElementById('cyberCatBubble');
+            bubble.innerText = text;
+            bubble.classList.add('show');
+            clearTimeout(bubbleTimer);
+            bubbleTimer = setTimeout(() => bubble.classList.remove('show'), 3500);
+        }
+
+        // ==========================================
+        // 看板原版基础业务表格及同步逻辑
+        // ==========================================
         function startClock() {
             setInterval(() => { document.getElementById('liveClock').innerText = new Date().toTimeString().split(' ')[0]; }, 1000);
             document.getElementById('lastModified').innerText = new Date(document.lastModified).toLocaleString();
@@ -387,7 +531,13 @@
         }
 
         function format(v) { return (v===undefined||v===null||isNaN(v)||v==='')?'-':parseFloat(v).toFixed(2); }
-        window.onload = () => { startClock(); bootMasterSelector(); };
+        
+        // 🚀 激活双系统核心
+        window.onload = () => { 
+            startClock(); 
+            bootMasterSelector(); 
+            initCyberCatWebGL(); 
+        };
     </script>
 </body>
 </html>
