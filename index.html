@@ -100,10 +100,10 @@
             <table id="metricsTable">
                 <thead>
                     <tr>
-                        <th rowspan="2" onclick="sortTable('ts_code')">股票代码</th>
-                        <th rowspan="2" onclick="sortTable('name')">股票名称</th>
-                        <th rowspan="2" onclick="sortTable('industry')">所属行业</th>
-                        <th rowspan="2" onclick="sortTable('board')">分类板块</th>
+                        <th rowspan="2" data-field="ts_code" onclick="sortTable('ts_code')">股票代码</th>
+                        <th rowspan="2" data-field="name" onclick="sortTable('name')">股票名称</th>
+                        <th rowspan="2" data-field="industry" onclick="sortTable('industry')">所属行业</th>
+                        <th rowspan="2" data-field="board" onclick="sortTable('board')">分类板块</th>
                         <th colspan="2" style="background:rgba(255, 253, 231, 0.6); color:#b71c1c;">价格对比(元)</th>
                         <th colspan="2" style="background:rgba(243, 229, 245, 0.6); color:#4a148c;">总市值对比(亿)</th>
                         <th colspan="2" style="background:rgba(255, 253, 231, 0.6); color:#b71c1c;">换手率对比(%)</th>
@@ -123,23 +123,23 @@
                         <th colspan="2" style="background:rgba(255, 253, 231, 0.6); color:#b71c1c;">每股现金流 CFPS</th>
                     </tr>
                     <tr>
-                        <th onclick="sortTable('now_price')" class="col-now">最新</th><th onclick="sortTable('history_price')" class="col-hist">历史</th>
-                        <th onclick="sortTable('now_mv')" class="col-now">最新</th><th onclick="sortTable('total_mv')" class="col-hist">历史</th>
-                        <th onclick="sortTable('now_turnover')" class="col-now">最新</th><th onclick="sortTable('turnover_ratio')" class="col-hist">历史</th>
-                        <th onclick="sortTable('now_pe')" class="col-now">最新</th><th onclick="sortTable('pe')" class="col-hist">历史</th>
-                        <th onclick="sortTable('now_pb')" class="col-now">最新</th><th onclick="sortTable('pb')" class="col-hist">历史</th>
-                        <th onclick="sortTable('now_dv_ratio')" class="col-now">最新</th><th onclick="sortTable('dv_ratio')" class="col-hist">历史</th>
-                        <th onclick="sortTable('now_roe')" class="col-now">最新</th><th onclick="sortTable('roe')" class="col-hist">历史</th>
-                        <th onclick="sortTable('now_roa')" class="col-now">最新</th><th onclick="sortTable('roa')" class="col-hist">历史</th>
-                        <th onclick="sortTable('now_revenue_growth')" class="col-now">最新</th><th onclick="sortTable('revenue_growth')" class="col-hist">历史</th>
-                        <th onclick="sortTable('now_profit_growth')" class="col-now">最新</th><th onclick="sortTable('profit_growth')" class="col-hist">历史</th>
-                        <th onclick="sortTable('now_gross_margin')" class="col-now">最新</th><th onclick="sortTable('gross_margin')" class="col-hist">历史</th>
-                        <th onclick="sortTable('now_net_margin')" class="col-now">最新</th><th onclick="sortTable('net_margin')" class="col-hist">历史</th>
-                        <th onclick="sortTable('now_debt_asset_ratio')" class="col-now">最新</th><th onclick="sortTable('debt_asset_ratio')" class="col-hist">历史</th>
-                        <th onclick="sortTable('now_current_ratio')" class="col-now">最新</th><th onclick="sortTable('current_ratio')" class="col-hist">历史</th>
-                        <th onclick="sortTable('now_quick_ratio')" class="col-now">最新</th><th onclick="sortTable('quick_ratio')" class="col-hist">历史</th>
-                        <th onclick="sortTable('now_bps')" class="col-now">最新</th><th onclick="sortTable('bps')" class="col-hist">历史</th>
-                        <th onclick="sortTable('now_cfps')" class="col-now">最新</th><th onclick="sortTable('cfps')" class="col-hist">历史</th>
+                        <th data-field="now_price" onclick="sortTable('now_price')" class="col-now">最新</th><th data-field="history_price" onclick="sortTable('history_price')" class="col-hist">历史</th>
+                        <th data-field="now_mv" onclick="sortTable('now_mv')" class="col-now">最新</th><th data-field="total_mv" onclick="sortTable('total_mv')" class="col-hist">历史</th>
+                        <th data-field="now_turnover" onclick="sortTable('now_turnover')" class="col-now">最新</th><th data-field="turnover_ratio" onclick="sortTable('turnover_ratio')" class="col-hist">历史</th>
+                        <th data-field="now_pe" onclick="sortTable('now_pe')" class="col-now">最新</th><th data-field="pe" onclick="sortTable('pe')" class="col-hist">历史</th>
+                        <th data-field="now_pb" onclick="sortTable('now_pb')" class="col-now">最新</th><th data-field="pb" onclick="sortTable('pb')" class="col-hist">历史</th>
+                        <th data-field="now_dv_ratio" onclick="sortTable('now_dv_ratio')" class="col-now">最新</th><th data-field="dv_ratio" onclick="sortTable('dv_ratio')" class="col-hist">历史</th>
+                        <th data-field="now_roe" onclick="sortTable('now_roe')" class="col-now">最新</th><th data-field="roe" onclick="sortTable('roe')" class="col-hist">历史</th>
+                        <th data-field="now_roa" onclick="sortTable('now_roa')" class="col-now">最新</th><th data-field="roa" onclick="sortTable('roa')" class="col-hist">历史</th>
+                        <th data-field="now_revenue_growth" onclick="sortTable('now_revenue_growth')" class="col-now">最新</th><th data-field="revenue_growth" onclick="sortTable('revenue_growth')" class="col-hist">历史</th>
+                        <th data-field="now_profit_growth" onclick="sortTable('now_profit_growth')" class="col-now">最新</th><th data-field="profit_growth" onclick="sortTable('profit_growth')" class="col-hist">历史</th>
+                        <th data-field="now_gross_margin" onclick="sortTable('now_gross_margin')" class="col-now">最新</th><th data-field="gross_margin" onclick="sortTable('gross_margin')" class="col-hist">历史</th>
+                        <th data-field="now_net_margin" onclick="sortTable('now_net_margin')" class="col-now">最新</th><th data-field="net_margin" onclick="sortTable('net_margin')" class="col-hist">历史</th>
+                        <th data-field="now_debt_asset_ratio" onclick="sortTable('now_debt_asset_ratio')" class="col-now">最新</th><th data-field="debt_asset_ratio" onclick="sortTable('debt_asset_ratio')" class="col-hist">历史</th>
+                        <th data-field="now_current_ratio" onclick="sortTable('now_current_ratio')" class="col-now">最新</th><th data-field="current_ratio" onclick="sortTable('current_ratio')" class="col-hist">历史</th>
+                        <th data-field="now_quick_ratio" onclick="sortTable('now_quick_ratio')" class="col-now">最新</th><th data-field="quick_ratio" onclick="sortTable('quick_ratio')" class="col-hist">历史</th>
+                        <th data-field="now_bps" onclick="sortTable('now_bps')" class="col-now">最新</th><th data-field="bps" onclick="sortTable('bps')" class="col-hist">历史</th>
+                        <th data-field="now_cfps" onclick="sortTable('now_cfps')" class="col-now">最新</th><th data-field="cfps" onclick="sortTable('cfps')" class="col-hist">历史</th>
                     </tr>
                 </thead>
                 <tbody id="tableBody"></tbody>
@@ -157,21 +157,21 @@
             document.getElementById('lastModified').innerText = new Date(document.lastModified).toLocaleString();
         }
 
+        // 年份列表：与 data_slices/ 下文件对应（若需自动扩容，可在 main.py 输出 years.json 后改为 fetch）
+        const YEARS = [2026,2025,2024,2023,2022,2021,2020,2019,2018,2017,2016,2015,2014,2013,2012,2011,2010,2009,2008,2007];
+
         async function bootMasterSelector() {
             try {
-                const masterRes = await fetch('data.json?cb=' + Date.now());
-                const masterData = await masterRes.json();
-                const availableYears = [...new Set(masterData.map(item => parseInt(item.year)))].sort((a,b)=>b-a);
                 const yearFilterSelect = document.getElementById('yearFilterSelect');
                 yearFilterSelect.innerHTML = '';
-                availableYears.forEach(y => {
+                YEARS.forEach(y => {
                     const opt = document.createElement('option');
                     opt.value = y; opt.innerText = y + " 年";
                     yearFilterSelect.appendChild(opt);
                 });
                 await onYearMasterChange();
             } catch {
-                document.getElementById('dataStatus').innerText = "⚠️ 中央索引加载失败";
+                document.getElementById('dataStatus').innerText = "⚠️ 初始化失败";
             }
         }
 
@@ -193,6 +193,18 @@
             if (currentSortField === field) { currentSortOrder = currentSortOrder === 'asc' ? 'desc' : 'asc'; }
             else { currentSortField = field; currentSortOrder = 'desc'; }
             calculateAndRender();
+        }
+
+        // 在表头渲染当前排序列的 ▲/▼ 指示
+        function updateSortIndicator() {
+            document.querySelectorAll('th[data-field]').forEach(th => {
+                const base = th.textContent.replace(/[▲▼]\s*$/, '').trim();
+                if (th.dataset.field === currentSortField) {
+                    th.textContent = base + (currentSortOrder === 'asc' ? ' ▲' : ' ▼');
+                } else {
+                    th.textContent = base;
+                }
+            });
         }
 
         function calculateAndRender() {
@@ -251,7 +263,7 @@
                     <td class="col-now">${format(stock.now_price)}</td><td class="col-hist">${format(stock.history_price)}</td>
                     <td class="col-now">${format(stock.now_mv)}</td><td class="col-hist">${format(stock.total_mv)}</td>
                     <td class="col-now">${format(stock.now_turnover)}%</td><td class="col-hist">${format(stock.turnover_ratio)}%</td>
-                    <td class="col-now">${stock.now_pe>0?format(stock.now_pe):'-'}</td><td class="col-hist">${stock.pb>0?format(stock.pe):'-'}</td>
+                    <td class="col-now">${stock.now_pe>0?format(stock.now_pe):'-'}</td><td class="col-hist">${stock.pe>0?format(stock.pe):'-'}</td>
                     <td class="col-now">${stock.now_pb>0?format(stock.now_pb):'-'}</td><td class="col-hist">${stock.pb>0?format(stock.pb):'-'}</td>
                     <td class="col-now">${format(stock.now_dv_ratio)}%</td><td class="col-hist">${format(stock.dv_ratio)}%</td>
                     <td class="col-now">${format(stock.now_roe)}%</td><td class="col-hist">${format(stock.roe)}%</td>
@@ -274,12 +286,20 @@
             let avgRow = document.createElement('tr'); avgRow.className = "avg-row";
             let avgHtml = `<td>-</td><td style="text-align:left; padding-left:20px;">📊 截面算术均值</td><td>-</td><td>-</td>`;
             numericFields.forEach(f => {
-                let isPct = f.includes('growth') || f.includes('margin') || f.includes('ratio') || f.includes('roe') || f.includes('roa') || f.includes('turnover');
+                // 仅真正“百分比”类字段加 %；PE/PB、流动/速动比率、BPS/CFPS 等为倍数或绝对值，不加 %
+                const pctFields = new Set([
+                    'now_revenue_growth','revenue_growth','now_profit_growth','profit_growth',
+                    'now_gross_margin','gross_margin','now_net_margin','net_margin',
+                    'now_debt_asset_ratio','debt_asset_ratio',
+                    'now_roe','roe','now_roa','roa','now_turnover','turnover_ratio','now_dv_ratio','dv_ratio'
+                ]);
+                let isPct = pctFields.has(f);
                 let cls = f.includes('now') ? 'col-now' : 'col-hist';
                 avgHtml += `<td class="${cls}">${format(sums[f]/len)}${isPct?'%':''}</td>`;
             });
             avgRow.innerHTML = avgHtml;
             tbody.appendChild(avgRow);
+            updateSortIndicator();
         }
 
         function format(v) { return (v===undefined||v===null||isNaN(v)||v==='')?'-':parseFloat(v).toFixed(2); }
